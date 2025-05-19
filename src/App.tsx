@@ -33,6 +33,8 @@ export default function App() {
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       fitView
+      maxZoom={1}
+      minZoom={1}
     >
       <Background />
       <MiniMap />

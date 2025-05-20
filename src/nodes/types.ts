@@ -1,34 +1,42 @@
 import { CircleNodeData } from "@/nodes/CircleNode.tsx";
-import { BuiltInNode, type Node } from "@xyflow/react";
+import { type Node } from "@xyflow/react";
+import { OutputNodeData } from "@/nodes/OutputNode.tsx";
+import { Layer, RGBA } from "@/core/Layer.ts";
 
 export type ConnectionType = "layer" | "color" | "number" | "option";
 
-export type OutputNodeParams = {
-  width: number;
-  height: number;
+export type HandleType = "number" | "color" | "layer";
+
+type HandleValueType<T extends HandleType> = T extends "number"
+  ? number
+  : T extends "color"
+    ? RGBA
+    : T extends "layer"
+      ? Layer
+      : never;
+
+export type TypedValue<T extends HandleType = HandleType> = {
+  type: T;
+  value: HandleValueType<T>;
 };
 
-export type Connection = {
-  id: string;
-  source: string;
-  sourceHandle: string;
-  target: string;
-  targetHandle: string;
+export type EvaluationContext = {
+  nodeId: string;
+  getInputValue<T extends HandleType>(inputHandleId: string): TypedValue<T>;
 };
 
-export type CanvasNodeData = {
-  width: number;
-  height: number;
-  // Optional initial draw function
-  scale: number;
-  onDraw?: (ctx: CanvasRenderingContext2D) => void;
-};
+export type NodeId = string;
+export type HandleId = string;
 
-export type PositionLoggerNode = Node<{ label: string }, "position-logger">;
-export type CanvasNode = Node<CanvasNodeData, "canvas">;
+export type EvaluationResult = Record<HandleId, TypedValue>;
+
+type NodeEvaluator = (
+  ctx: EvaluationContext,
+  node: AppNode,
+) => EvaluationResult;
+
+export type EvaluatorRegistry = Record<string, NodeEvaluator>;
+
 export type CircleNode = Node<CircleNodeData, "circle">;
-export type AppNode =
-  | BuiltInNode
-  | PositionLoggerNode
-  | CanvasNode
-  | CircleNode;
+export type OutputNode = Node<OutputNodeData, "output">;
+export type AppNode = CircleNode | OutputNode;

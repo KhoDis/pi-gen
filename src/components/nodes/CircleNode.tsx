@@ -18,10 +18,9 @@ import { useNodeParams } from "../../core/hooks/useNodeParams";
 
 // Import shadcn/ui components
 import { Slider } from "../ui/slider";
-import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { ColorPicker } from "../ui/color-picker";
-import { Card } from "../ui/card";
+import { ParamField } from "../ui/param-field";
 
 /**
  * Circle node parameters
@@ -33,12 +32,11 @@ export interface CircleNodeParams extends NodeParams {
 
 /**
  * Circle node component
+ *
+ * This component only provides the parameter controls.
+ * The outer container and header are provided by BaseNode.
  */
-const CircleNodeContent: React.FC<NodeComponentProps> = ({
-  id,
-  data,
-  // selected is provided by the framework but not used in this component
-}) => {
+const CircleNodeContent: React.FC<NodeComponentProps> = ({ id, data }) => {
   const updateNodeParams = useGraphStore((state) => state.updateNodeParams);
 
   // Get parameters with proper typing and default values
@@ -61,14 +59,20 @@ const CircleNodeContent: React.FC<NodeComponentProps> = ({
   );
 
   return (
-    <Card className="p-4 w-[280px] shadow-md">
-      <div className="text-lg font-semibold mb-4">Circle</div>
-
-      <div className="space-y-6">
-        {/* Radius Control */}
-        <div className="space-y-2">
+    <div className="space-y-4">
+      {/* Radius Control with Input Handle */}
+      <ParamField label="Radius" inputId="radius" inputType="number">
+        <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="radius">Radius</Label>
+            <Slider
+              id="radius"
+              min={1}
+              max={100}
+              step={1}
+              value={[radius]}
+              onValueChange={(values) => handleRadiusChange(values[0])}
+              className="flex-1 mr-2"
+            />
             <Input
               id="radius-input"
               type="number"
@@ -79,23 +83,21 @@ const CircleNodeContent: React.FC<NodeComponentProps> = ({
               className="w-16 h-8"
             />
           </div>
-          <Slider
-            id="radius"
-            min={1}
-            max={100}
-            step={1}
-            value={[radius]}
-            onValueChange={(values) => handleRadiusChange(values[0])}
-          />
         </div>
+      </ParamField>
 
-        {/* Color Control */}
-        <div className="space-y-2">
-          <Label htmlFor="color">Color</Label>
-          <ColorPicker value={color} onChange={handleColorChange} />
+      {/* Color Control with Input Handle */}
+      <ParamField label="Color" inputId="color" inputType="color">
+        <ColorPicker value={color} onChange={handleColorChange} />
+      </ParamField>
+
+      {/* Output with Handle */}
+      <ParamField label="Output" outputId="layer" outputType="layer">
+        <div className="h-6 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-xs text-gray-500">
+          Layer Output
         </div>
-      </div>
-    </Card>
+      </ParamField>
+    </div>
   );
 };
 

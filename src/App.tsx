@@ -16,8 +16,13 @@ import {
 import "@xyflow/react/dist/style.css";
 
 // Import from our new component structure
-import { nodeRegistry } from "./core/registry/NodeRegistry";
+import { CircleNode } from "./components/nodes/CircleNode";
 import { RGBA } from "./core/models/Layer";
+
+// Define node types for ReactFlow
+const nodeTypes: NodeTypes = {
+  circle: CircleNode,
+};
 
 // Create initial nodes using our new architecture
 const initialNodes: Node[] = [
@@ -32,31 +37,10 @@ const initialNodes: Node[] = [
       },
     },
   },
-  {
-    id: "output1",
-    type: "output",
-    position: { x: 400, y: 100 },
-    data: {
-      params: {
-        width: 32,
-        height: 32,
-        scale: 3,
-      },
-    },
-  },
 ];
 
 // Initial edges connecting the nodes
-const initialEdges: Edge[] = [
-  {
-    id: "circle1-output1",
-    source: "circle1",
-    sourceHandle: "layer",
-    target: "output1",
-    targetHandle: "layer",
-    animated: true,
-  },
-];
+const initialEdges: Edge[] = [];
 
 export default function App() {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
@@ -67,9 +51,6 @@ export default function App() {
     (connection) => setEdges((edges) => addEdge(connection, edges)),
     [setEdges],
   );
-
-  // Get node types from registry
-  const nodeTypes = nodeRegistry.getComponentTypes() as unknown as NodeTypes;
 
   return (
     <div className="h-screen w-screen">

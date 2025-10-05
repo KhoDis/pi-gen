@@ -16,7 +16,7 @@ import "@xyflow/react/dist/style.css";
 
 // Import from our new component structure
 import { CircleNode } from "./components/nodes/CircleNode";
-import { OutputNode } from "./components/nodes/OutputNode";
+import { DisplayNode } from "./components/nodes/DisplayNode";
 import { RGBA } from "./core/models/Layer";
 import { useGraphStore } from "./core/store/graphStore";
 import { NodeParams } from "./core/types/nodes";
@@ -24,7 +24,7 @@ import { NodeParams } from "./core/types/nodes";
 // Define node types for ReactFlow
 const nodeTypes: NodeTypes = {
   circle: CircleNode,
-  output: OutputNode,
+  display: DisplayNode,
 };
 
 // Create initial nodes using our new architecture
@@ -42,7 +42,7 @@ const initialNodes: Node[] = [
   },
   {
     id: "output1",
-    type: "output",
+    type: "display",
     position: { x: 400, y: 100 },
     data: {
       params: {},

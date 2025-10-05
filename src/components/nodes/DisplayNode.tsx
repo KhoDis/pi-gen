@@ -1,5 +1,5 @@
 /**
- * Output Node Component for the Pi-Gen project
+ * Display Node Component for the Pi-Gen project
  *
  * This component displays the final output of the node graph.
  */
@@ -17,18 +17,18 @@ import { ParamField } from "../ui/param-field";
 import { RGBA } from "../../core/models/Layer";
 
 /**
- * Output node parameters
+ * Display node parameters
  */
-export interface OutputNodeParams {
-  // No parameters needed for the output node
+export interface DisplayNodeParams {
+  // No parameters needed for the display node
 }
 
 /**
- * Output node component
+ * Display node component
  *
  * This component displays the final rendered image from the node graph.
  */
-const OutputNodeContent: React.FC<NodeComponentProps> = ({ id }) => {
+const DisplayNodeContent: React.FC<NodeComponentProps> = ({ id }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const graphStore = useGraphStore();
 
@@ -114,6 +114,7 @@ const OutputNodeContent: React.FC<NodeComponentProps> = ({ id }) => {
       {/* Input handle */}
       <ParamField
         label="Input Layer"
+        className="bg-gray-100 dark:bg-gray-700"
         leftHandle={{
           id: "layer",
           type: "target",
@@ -167,11 +168,11 @@ const OutputNodeContent: React.FC<NodeComponentProps> = ({ id }) => {
 };
 
 /**
- * Output node evaluator function
+ * Display node evaluator function
  *
  * This node doesn't transform data, it just passes through the input layer.
  */
-function evaluateOutputNode(ctx: EvaluationContext) {
+function evaluateDisplayNode(ctx: EvaluationContext) {
   // Get the input layer
   const layer = ctx.getLayerInput("layer");
 
@@ -181,18 +182,18 @@ function evaluateOutputNode(ctx: EvaluationContext) {
   };
 }
 
-// Register the output node type
+// Register the display node type
 nodeRegistry.register({
-  type: "output",
+  type: "display",
   label: "Output",
   category: "Output",
   description: "Displays the final output image",
   inputs: [{ id: "layer", label: "Layer", type: "layer", required: true }],
   outputs: [],
   defaultParams: {},
-  component: OutputNodeContent,
-  evaluate: evaluateOutputNode,
+  component: DisplayNodeContent,
+  evaluate: evaluateDisplayNode,
 });
 
-// Create the output node component
-export const OutputNode = createNodeComponent("output");
+// Create the display node component
+export const DisplayNode = createNodeComponent("display");

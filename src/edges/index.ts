@@ -1,11 +1,18 @@
 import type { Edge, EdgeTypes } from "@xyflow/react";
 
+// Initial edges for the graph
 export const initialEdges: Edge[] = [
-  { id: "a->c", source: "a", target: "c", animated: true },
-  { id: "b->d", source: "b", target: "d", type: "step" },
-  { id: "c->d", source: "c", target: "d", animated: true },
+  {
+    id: "circle1-output1",
+    source: "circle1",
+    sourceHandle: "layer",
+    target: "output1",
+    targetHandle: "layer",
+    animated: true,
+  },
 ];
 
+// Custom edge types
 export const edgeTypes = {
-  // Add your custom edge types here!
+  // Add your custom edge types here
 } satisfies EdgeTypes;

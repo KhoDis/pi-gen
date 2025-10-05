@@ -1,42 +1,30 @@
-import { CircleNodeData } from "@/nodes/CircleNode.tsx";
 import { type Node } from "@xyflow/react";
-import { OutputNodeData } from "@/nodes/OutputNode.tsx";
-import { Layer, RGBA } from "@/core/Layer.ts";
+import { RGBA } from "../core/models/Layer";
+import { NodeData, NodeParams } from "../core/types/nodes";
 
-export type ConnectionType = "layer" | "color" | "number" | "option";
+// Circle node parameters
+export interface CircleNodeParams extends NodeParams {
+  radius: number;
+  color: RGBA;
+}
 
-export type HandleType = "number" | "color" | "layer";
+// Output node parameters
+export interface OutputNodeParams extends NodeParams {
+  width: number;
+  height: number;
+  scale: number;
+}
 
-type HandleValueType<T extends HandleType> = T extends "number"
-  ? number
-  : T extends "color"
-    ? RGBA
-    : T extends "layer"
-      ? Layer
-      : never;
+// Node data types
+export interface CircleNodeData extends NodeData {
+  params: CircleNodeParams;
+}
 
-export type TypedValue<T extends HandleType = HandleType> = {
-  type: T;
-  value: HandleValueType<T>;
-};
+export interface OutputNodeData extends NodeData {
+  params: OutputNodeParams;
+}
 
-export type EvaluationContext = {
-  nodeId: string;
-  getInputValue<T extends HandleType>(inputHandleId: string): TypedValue<T>;
-};
-
-export type NodeId = string;
-export type HandleId = string;
-
-export type EvaluationResult = Record<HandleId, TypedValue>;
-
-type NodeEvaluator = (
-  ctx: EvaluationContext,
-  node: AppNode,
-) => EvaluationResult;
-
-export type EvaluatorRegistry = Record<string, NodeEvaluator>;
-
+// Node types
 export type CircleNode = Node<CircleNodeData, "circle">;
 export type OutputNode = Node<OutputNodeData, "output">;
 export type AppNode = CircleNode | OutputNode;

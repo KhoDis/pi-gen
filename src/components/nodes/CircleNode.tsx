@@ -4,7 +4,7 @@
  * This component implements a node that generates a circle shape.
  */
 
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { NodeComponentProps } from "../../core/registry/NodeRegistry";
 import { useGraphStore } from "../../core/store/graphStore";
 import { RGBA } from "../../core/models/Layer";
@@ -39,14 +39,22 @@ export interface CircleNodeParams extends NodeParams {
  */
 const CircleNodeContent: React.FC<NodeComponentProps> = ({ id, data }) => {
   const updateNodeParams = useGraphStore((state) => state.updateNodeParams);
+  const getNode = useGraphStore((state) => state.getNode);
 
   // Get parameters with proper typing and default values
   const params = useNodeParams<CircleNodeParams>("circle", data);
   const { radius, color } = params;
 
+  // Log the current node data for debugging
+  useEffect(() => {
+    const node = getNode(id);
+    console.log("Current node data:", node);
+  }, [id, getNode]);
+
   // Handle parameter changes
   const handleRadiusChange = useCallback(
     (value: number) => {
+      console.log("Updating radius to:", value);
       updateNodeParams(id, { radius: value });
     },
     [id, updateNodeParams],
@@ -54,6 +62,7 @@ const CircleNodeContent: React.FC<NodeComponentProps> = ({ id, data }) => {
 
   const handleColorChange = useCallback(
     (value: RGBA) => {
+      console.log("Updating color to:", value);
       updateNodeParams(id, { color: value });
     },
     [id, updateNodeParams],

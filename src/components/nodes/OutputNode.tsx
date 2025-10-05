@@ -104,7 +104,7 @@ const OutputNodeContent: React.FC<NodeComponentProps> = ({ id }) => {
         }
       }
     }
-  }, [sourceNode, graphStore.edges]);
+  }, [sourceNode, graphStore.edges, graphStore.nodes]);
 
   // Get the layer for rendering
   const layer = getLayer();

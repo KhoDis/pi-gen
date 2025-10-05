@@ -1,206 +1,174 @@
-# Node UI Architecture Analysis
+# Node UI Approaches Analysis
 
-## Current Issue: Double Card UI
+## Handle Positioning Problem
 
-Looking at both `BaseNode.tsx` and `CircleNode.tsx`, we've identified a critical UI issue:
+Currently, we're facing an issue where the handles are drawn inside the node card rather than at the edge of the card. This creates a visual disconnect between the handles and the edges of the node, making it harder for users to understand the connection points.
 
-1. `BaseNode.tsx` already provides a card-like container with:
-   - A title header
-   - Input/output handles
-   - Border styling
-   - Selected state styling
+## Possible Approaches
 
-2. `CircleNode.tsx` now also includes a Card component, creating a nested card effect:
-   - This creates redundant padding
-   - Adds unnecessary shadow layering
-   - Results in a visually broken UI
+### 1. Absolute Positioning with Negative Margins
 
-## Approaches to Node UI Architecture
-
-### Approach 1: Base Container + Content Components
-
-**Structure:**
-
-- `BaseNode` provides the outer container, handles, and common styling
-- Node-specific components provide only the parameter controls
+**Description:**
+Use absolute positioning with negative margins to move the handles outside the card.
 
 **Implementation:**
 
 ```tsx
-// BaseNode.tsx (container)
+<div className="relative">
+  <label>Parameter</label>
+  <Handle
+    type="target"
+    position={Position.Left}
+    id="param"
+    style={{
+      left: -10, // Negative value to move outside
+      top: 10,
+    }}
+  />
+</div>
+```
+
+**Pros:**
+
+- Simple to implement
+- Works with the existing card structure
+
+**Cons:**
+
+- Brittle solution that might break with UI changes
+- Requires manual positioning for each handle
+- May not work well with different zoom levels
+
+### 2. Custom Node Container with Extended Borders
+
+**Description:**
+Redesign the node container to have extended borders where handles can be placed.
+
+**Implementation:**
+
+```tsx
 <div className="node-container">
-  <div className="node-header">{title}</div>
-  <div className="node-content">
-    {/* Input handles */}
-    <NodeContent {...props} /> {/* Child component injected here */}
-    {/* Output handles */}
-  </div>
-</div>
-
-// CircleNode.tsx (content only)
-<div className="parameters">
-  <Slider label="Radius" value={radius} onChange={handleRadiusChange} />
-  <ColorPicker label="Color" value={color} onChange={handleColorChange} />
+  <div className="handle-area-left">{/* Left handles go here */}</div>
+  <div className="node-content">{/* Node content goes here */}</div>
+  <div className="handle-area-right">{/* Right handles go here */}</div>
 </div>
 ```
 
-**Advantages:**
+**Pros:**
 
-- Clear separation of concerns
-- Consistent outer styling across all nodes
-- Node components only need to focus on their specific parameters
+- Clean separation of handles and content
+- More maintainable in the long run
+- Better visual design
 
-**Disadvantages:**
+**Cons:**
 
-- Less flexibility for node-specific outer styling
-- Requires careful coordination of spacing between base and content
+- Requires significant refactoring of the node components
+- More complex CSS
 
-### Approach 2: Fully Customizable Nodes with Shared Components
+### 3. Field-Level Handle Containers
 
-**Structure:**
-
-- No base container
-- Each node implements its full UI
-- Shared components for common elements (handles, headers)
+**Description:**
+Instead of having a single card with padding, create a series of field containers that extend to the edges of the node, with handles positioned at their edges.
 
 **Implementation:**
 
 ```tsx
-// CircleNode.tsx (full implementation)
-<Card>
-  <NodeHeader title="Circle" />
-  <div className="node-content">
-    <InputHandles inputs={inputs} />
-    <div className="parameters">
-      <Slider label="Radius" value={radius} onChange={handleRadiusChange} />
-      <ColorPicker label="Color" value={color} onChange={handleColorChange} />
-    </div>
-    <OutputHandles outputs={outputs} />
+<div className="node-container p-0">
+  <div className="node-header p-2">Title</div>
+  <div className="field-container relative border-y py-2 px-4">
+    <label>Parameter 1</label>
+    <input type="number" />
+    <Handle
+      type="target"
+      position={Position.Left}
+      id="param1"
+      style={{
+        left: 0,
+        top: "50%",
+      }}
+    />
   </div>
-</Card>
+  <div className="field-container relative border-b py-2 px-4">
+    <label>Parameter 2</label>
+    <input type="text" />
+    <Handle
+      type="target"
+      position={Position.Left}
+      id="param2"
+      style={{
+        left: 0,
+        top: "50%",
+      }}
+    />
+  </div>
+</div>
 ```
 
-**Advantages:**
+**Pros:**
 
-- Maximum flexibility for each node type
-- No constraints from a base container
+- Handles align naturally with their fields
+- Visually clear which handle connects to which parameter
+- More maintainable than absolute positioning
 
-**Disadvantages:**
+**Cons:**
 
-- Potential inconsistency between nodes
-- Duplication of common code
-- More complex node components
+- Requires redesigning the node UI
+- May look different from standard node UIs
 
-### Approach 3: Higher-Order Component with Composition
+### 4. Custom Handle Component with Portal
 
-**Structure:**
-
-- `createNodeComponent` is a higher-order function that wraps node content
-- Node content components receive props for parameters but don't handle the outer container
+**Description:**
+Create a custom handle component that uses React portals to render the handle outside the node container but positioned relative to it.
 
 **Implementation:**
 
 ```tsx
-// BaseNode.tsx (HOC)
-export function createNodeComponent(nodeType) {
-  return (props) => {
-    // Get node type info, handles, etc.
-    return (
-      <BaseNodeContainer title={title} inputs={inputs} outputs={outputs}>
-        <NodeContent {...props} /> {/* Injected here */}
-      </BaseNodeContainer>
-    );
+const CustomHandle = ({ id, type, position, fieldRef }) => {
+  const nodeRef = useContext(NodeContext);
+  const fieldRect = fieldRef.current.getBoundingClientRect();
+  const nodeRect = nodeRef.current.getBoundingClientRect();
+
+  const style = {
+    position: "absolute",
+    left: position === Position.Left ? nodeRect.left : nodeRect.right,
+    top: fieldRect.top + fieldRect.height / 2,
   };
-}
 
-// CircleNode.tsx (parameters only)
-const CircleNodeContent = ({ params, updateParams }) => {
-  return (
-    <div className="parameters">
-      <Slider
-        value={params.radius}
-        onChange={(v) => updateParams({ radius: v })}
-      />
-      <ColorPicker
-        value={params.color}
-        onChange={(v) => updateParams({ color: v })}
-      />
-    </div>
+  return ReactDOM.createPortal(
+    <Handle type={type} position={position} id={id} style={style} />,
+    document.body,
   );
 };
 ```
 
-**Advantages:**
+**Pros:**
 
-- Clean separation of concerns
-- Consistent styling with flexibility for content
-- Node components are simpler and focused on parameters
+- Handles can be positioned anywhere, even outside the node
+- Most flexible solution
 
-**Disadvantages:**
+**Cons:**
 
-- Requires careful prop passing
-- May limit some customization options
-
-### Approach 4: Slot-Based Component System
-
-**Structure:**
-
-- `BaseNode` provides slots for different parts of the node
-- Node components fill these slots with their specific content
-
-**Implementation:**
-
-```tsx
-// BaseNode.tsx (with slots)
-<div className="node-container">
-  <div className="node-header">{headerSlot || title}</div>
-  <div className="node-content">
-    {/* Input handles */}
-    {contentSlot}
-    {/* Output handles */}
-  </div>
-  {footerSlot}
-</div>;
-
-// CircleNode.tsx (providing slot content)
-const content = (
-  <div className="parameters">
-    <Slider label="Radius" value={radius} onChange={handleRadiusChange} />
-    <ColorPicker label="Color" value={color} onChange={handleColorChange} />
-  </div>
-);
-
-return <BaseNode contentSlot={content} />;
-```
-
-**Advantages:**
-
-- Flexible yet structured
-- Clear boundaries between base and custom parts
-- Allows for partial customization
-
-**Disadvantages:**
-
-- More complex component API
-- Requires understanding of the slot system
+- Complex implementation
+- May have performance implications
+- Requires careful management of z-index
 
 ## Recommended Approach
 
-**Approach 3: Higher-Order Component with Composition** offers the best balance of:
+### Field-Level Handle Containers (Approach 3)
 
-- Separation of concerns
-- Consistent styling
-- Focused node components
-- Type safety
+This approach offers the best balance of visual clarity, maintainability, and implementation complexity. By redesigning the node UI to have field containers that extend to the edges, we can position handles directly at the edge of each field.
 
-This is already the approach used in the current codebase with `createNodeComponent`, but we need to ensure that node content components don't include their own container elements that conflict with the base node.
+**Implementation Plan:**
 
-## Implementation Fix
+1. Create a `ParamField` component that:
+   - Takes a label, children (input controls), and handle configuration
+   - Extends to the edges of the node
+   - Positions handles at the left/right edges
 
-The fix for our current issue is to:
+2. Update the `BaseNode` component to:
+   - Remove padding from the content area
+   - Use a border between fields instead of padding
 
-1. Remove the Card component from CircleNode.tsx
-2. Keep only the parameter controls in the CircleNode content component
-3. Let BaseNode.tsx handle the container, header, and handles
+3. Update node components to use the new `ParamField` component
 
-This will ensure a clean, consistent UI across all node types while allowing each node to focus on its specific parameters.
+This approach will provide a clean, maintainable solution that clearly associates handles with their parameters while ensuring handles appear at the edges of the node.

@@ -15,12 +15,13 @@ import { nodeRegistry } from "../../core/registry/NodeRegistry";
 import { EvaluationContext } from "../../core/types/evaluation";
 import { NodeParams } from "../../core/types/nodes";
 import { useNodeParams } from "../../core/hooks/useNodeParams";
+import { Position } from "@xyflow/react";
 
 // Import shadcn/ui components
 import { Slider } from "../ui/slider";
 import { Input } from "../ui/input";
 import { ColorPicker } from "../ui/color-picker";
-import { Handle, Position } from "@xyflow/react";
+import { ParamField } from "../ui/param-field";
 
 /**
  * Circle node parameters
@@ -59,74 +60,63 @@ const CircleNodeContent: React.FC<NodeComponentProps> = ({ id, data }) => {
   );
 
   return (
-    <div className="space-y-4 p-2">
+    <div>
       {/* Radius Control */}
-      <div className="space-y-2 relative">
+      <ParamField
+        label="Radius"
+        leftHandle={{
+          id: "radius",
+          type: "target",
+          position: Position.Left,
+          style: { backgroundColor: "#60a5fa" },
+        }}
+      >
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Radius</label>
+          <Slider
+            min={1}
+            max={100}
+            step={1}
+            value={[radius]}
+            onValueChange={(values) => handleRadiusChange(values[0])}
+            className="w-32"
+          />
           <Input
             type="number"
             min={1}
             max={100}
             value={radius}
             onChange={(e) => handleRadiusChange(Number(e.target.value))}
-            className="w-16 h-8"
+            className="w-16 h-8 ml-2"
           />
         </div>
-        <Slider
-          min={1}
-          max={100}
-          step={1}
-          value={[radius]}
-          onValueChange={(values) => handleRadiusChange(values[0])}
-        />
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="radius"
-          style={{
-            backgroundColor: "#60a5fa",
-            width: 10,
-            height: 10,
-            top: 20,
-          }}
-        />
-      </div>
+      </ParamField>
 
       {/* Color Control */}
-      <div className="space-y-2 relative">
-        <label className="text-sm font-medium">Color</label>
+      <ParamField
+        label="Color"
+        leftHandle={{
+          id: "color",
+          type: "target",
+          position: Position.Left,
+          style: { backgroundColor: "#f472b6" },
+        }}
+      >
         <ColorPicker value={color} onChange={handleColorChange} />
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="color"
-          style={{
-            backgroundColor: "#f472b6",
-            width: 10,
-            height: 10,
-            top: 20,
-          }}
-        />
-      </div>
+      </ParamField>
 
       {/* Output */}
-      <div className="relative h-6 mt-4">
-        <div className="h-6 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-xs text-gray-500">
-          Layer Output
-        </div>
-        <Handle
-          type="source"
-          position={Position.Right}
-          id="layer"
-          style={{
-            backgroundColor: "#4ade80",
-            width: 10,
-            height: 10,
-            top: 3,
-          }}
-        />
-      </div>
+      <ParamField
+        label="Layer Output"
+        className="bg-gray-100 dark:bg-gray-700"
+        rightHandle={{
+          id: "layer",
+          type: "source",
+          position: Position.Right,
+          style: { backgroundColor: "#4ade80" },
+        }}
+      >
+        <div className="h-4"></div>
+      </ParamField>
     </div>
   );
 };

@@ -33,6 +33,7 @@ export const BaseNode: React.FC<BaseNodeProps> = ({
         transition-colors
         w-60
         relative
+        overflow-visible
       `}
       data-node-type={type}
     >
@@ -41,11 +42,8 @@ export const BaseNode: React.FC<BaseNodeProps> = ({
         <h3 className="text-sm font-medium m-0">{title}</h3>
       </div>
 
-      {/* Node Content */}
-      <div className="p-3">
-        {/* Node Content (parameters, etc.) */}
-        {children}
-      </div>
+      {/* Node Content - No padding here to allow fields to extend to edges */}
+      <div className="node-content">{children}</div>
     </div>
   );
 };

@@ -10,8 +10,11 @@ import { createNodeComponent } from "./BaseNode";
 import { nodeRegistry } from "../../core/registry/NodeRegistry";
 import { EvaluationContext } from "../../core/types/evaluation";
 import { Layer } from "../../core/models/Layer";
-import { Handle, Position } from "@xyflow/react";
+import { Position } from "@xyflow/react";
 import { createLayerValue } from "../../core/types/values";
+import { useGraphStore } from "../../core/store/graphStore";
+import { ParamField } from "../ui/param-field";
+import { RGBA } from "../../core/models/Layer";
 
 /**
  * Output node parameters
@@ -25,38 +28,59 @@ export interface OutputNodeParams {
  *
  * This component displays the final rendered image from the node graph.
  */
-const OutputNodeContent: React.FC<NodeComponentProps> = () => {
+const OutputNodeContent: React.FC<NodeComponentProps> = ({ id }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const graphStore = useGraphStore();
 
-  // We'll use a ref to store the layer data
-  // In a real implementation, this would come from the graph evaluator
-  const layerRef = useRef<Layer | null>(null);
+  // Find the input edge connected to this node's layer input
+  const inputEdge = graphStore.edges.find(
+    (edge) => edge.target === id && edge.targetHandle === "layer",
+  );
 
-  // For demonstration purposes, create a simple layer if none exists
-  useEffect(() => {
-    if (!layerRef.current) {
-      const demoLayer = new Layer(100, 100);
+  // Get the source node of the input edge
+  const sourceNode = inputEdge
+    ? graphStore.nodes.find((node) => node.id === inputEdge.source)
+    : undefined;
 
-      // Draw a simple pattern
-      for (let x = 0; x < 100; x++) {
-        for (let y = 0; y < 100; y++) {
-          if ((x + y) % 10 < 5) {
-            demoLayer.setPixel(x, y, { r: 255, g: 0, b: 0, a: 1 });
-          }
+  // Function to evaluate the graph and get the layer
+  const getLayer = (): Layer | undefined => {
+    if (!sourceNode) return undefined;
+
+    // In a real implementation, this would use the graph evaluator
+    // For now, we'll create a simple circle as a placeholder
+    const radius = (sourceNode.data.params?.radius as number) || 10;
+    const color = (sourceNode.data.params?.color as RGBA) || {
+      r: 255,
+      g: 0,
+      b: 0,
+      a: 1,
+    };
+
+    const size = radius * 2;
+    const layer = new Layer(size, size);
+    const centerX = radius;
+    const centerY = radius;
+
+    // Draw the circle
+    for (let x = 0; x < size; x++) {
+      for (let y = 0; y < size; y++) {
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance <= radius) {
+          layer.setPixel(x, y, color);
         }
       }
-
-      layerRef.current = demoLayer;
     }
 
-    // Render the layer
-    renderLayer();
-  }, []);
+    return layer;
+  };
 
-  // Function to render the layer to the canvas
-  const renderLayer = () => {
+  // Render the layer to the canvas
+  useEffect(() => {
     const canvas = canvasRef.current;
-    const layer = layerRef.current;
+    const layer = getLayer();
 
     if (!canvas || !layer) return;
 
@@ -80,53 +104,64 @@ const OutputNodeContent: React.FC<NodeComponentProps> = () => {
         }
       }
     }
-  };
+  }, [sourceNode, graphStore.edges]);
+
+  // Get the layer for rendering
+  const layer = getLayer();
 
   return (
-    <div className="space-y-4 p-2">
+    <div>
       {/* Input handle */}
-      <div className="relative">
-        <label className="text-sm font-medium">Input Layer</label>
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="layer"
-          style={{
-            backgroundColor: "#4ade80",
-            width: 10,
-            height: 10,
-            top: 10,
-          }}
-        />
-      </div>
+      <ParamField
+        label="Input Layer"
+        leftHandle={{
+          id: "layer",
+          type: "target",
+          position: Position.Left,
+          style: { backgroundColor: "#4ade80" },
+        }}
+      >
+        <div className="h-4"></div>
+      </ParamField>
 
       {/* Canvas output */}
-      <div className="border border-gray-300 dark:border-gray-700 rounded overflow-hidden">
-        <canvas
-          ref={canvasRef}
-          className="pixelated" // Apply pixelated rendering
-          style={{
-            width: "100%",
-            imageRendering: "pixelated", // For modern browsers
-          }}
-        />
+      <div className="px-3 py-2">
+        <div className="border border-gray-300 dark:border-gray-700 rounded overflow-hidden">
+          {layer ? (
+            <canvas
+              ref={canvasRef}
+              className="pixelated" // Apply pixelated rendering
+              style={{
+                width: "100%",
+                imageRendering: "pixelated", // For modern browsers
+              }}
+            />
+          ) : (
+            <div className="h-32 flex items-center justify-center text-sm text-gray-500">
+              Connect a layer to see output
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Download button */}
-      <button
-        className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={() => {
-          if (!canvasRef.current || !layerRef.current) return;
+      <div className="px-3 pb-3">
+        <button
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!layer}
+          onClick={() => {
+            if (!canvasRef.current || !layer) return;
 
-          // Create a download link for the canvas
-          const link = document.createElement("a");
-          link.download = "pi-gen-output.png";
-          link.href = canvasRef.current.toDataURL("image/png");
-          link.click();
-        }}
-      >
-        Download Image
-      </button>
+            // Create a download link for the canvas
+            const link = document.createElement("a");
+            link.download = "pi-gen-output.png";
+            link.href = canvasRef.current.toDataURL("image/png");
+            link.click();
+          }}
+        >
+          Download Image
+        </button>
+      </div>
     </div>
   );
 };

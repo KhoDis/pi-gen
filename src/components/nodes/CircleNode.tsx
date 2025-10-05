@@ -4,11 +4,10 @@
  * This component implements a node that generates a circle shape.
  */
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import { NodeComponentProps } from "../../core/registry/NodeRegistry";
 import { useGraphStore } from "../../core/store/graphStore";
 import { RGBA } from "../../core/models/Layer";
-import { createNodeComponent } from "./BaseNode";
 import { Layer } from "../../core/models/Layer";
 import { createLayerValue } from "../../core/types/values";
 import { nodeRegistry } from "../../core/registry/NodeRegistry";
@@ -21,7 +20,16 @@ import { Position } from "@xyflow/react";
 import { Slider } from "../ui/slider";
 import { Input } from "../ui/input";
 import { ColorPicker } from "../ui/color-picker";
-import { ParamField } from "../ui/param-field";
+
+// Import React Flow UI components
+import {
+  BaseNode,
+  BaseNodeHeader,
+  BaseNodeHeaderTitle,
+  BaseNodeContent,
+  BaseNodeFooter,
+} from "../base-node";
+import { LabeledHandle } from "../labeled-handle";
 
 /**
  * Circle node parameters
@@ -34,27 +42,18 @@ export interface CircleNodeParams extends NodeParams {
 /**
  * Circle node component
  *
- * This component only provides the parameter controls.
- * The outer container and header are provided by BaseNode.
+ * This component provides the parameter controls for a circle node.
  */
-const CircleNodeContent: React.FC<NodeComponentProps> = ({ id, data }) => {
+const CircleNodeComponent: React.FC<NodeComponentProps> = ({ id, data }) => {
   const updateNodeParams = useGraphStore((state) => state.updateNodeParams);
-  const getNode = useGraphStore((state) => state.getNode);
 
   // Get parameters with proper typing and default values
   const params = useNodeParams<CircleNodeParams>("circle", data);
   const { radius, color } = params;
 
-  // Log the current node data for debugging
-  useEffect(() => {
-    const node = getNode(id);
-    console.log("Current node data:", node);
-  }, [id, getNode]);
-
   // Handle parameter changes
   const handleRadiusChange = useCallback(
     (value: number) => {
-      console.log("Updating radius to:", value);
       updateNodeParams(id, { radius: value });
     },
     [id, updateNodeParams],
@@ -62,71 +61,69 @@ const CircleNodeContent: React.FC<NodeComponentProps> = ({ id, data }) => {
 
   const handleColorChange = useCallback(
     (value: RGBA) => {
-      console.log("Updating color to:", value);
       updateNodeParams(id, { color: value });
     },
     [id, updateNodeParams],
   );
 
   return (
-    <div>
-      {/* Radius Control */}
-      <ParamField
-        label="Radius"
-        leftHandle={{
-          id: "radius",
-          type: "target",
-          position: Position.Left,
-          style: { backgroundColor: "#60a5fa" },
-        }}
-      >
-        <div className="flex items-center justify-between">
+    <BaseNode className="w-[250px]">
+      <BaseNodeHeader className="border-b">
+        <BaseNodeHeaderTitle>Circle</BaseNodeHeaderTitle>
+      </BaseNodeHeader>
+
+      <BaseNodeContent>
+        {/* Radius Control */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <LabeledHandle
+              id="radius"
+              type="target"
+              position={Position.Left}
+              title="Radius"
+            />
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              value={radius}
+              onChange={(e) => handleRadiusChange(Number(e.target.value))}
+              className="w-16 h-8"
+            />
+          </div>
           <Slider
             min={1}
             max={100}
             step={1}
             value={[radius]}
             onValueChange={(values) => handleRadiusChange(values[0])}
-            className="w-32"
-          />
-          <Input
-            type="number"
-            min={1}
-            max={100}
-            value={radius}
-            onChange={(e) => handleRadiusChange(Number(e.target.value))}
-            className="w-16 h-8 ml-2"
           />
         </div>
-      </ParamField>
 
-      {/* Color Control */}
-      <ParamField
-        label="Color"
-        leftHandle={{
-          id: "color",
-          type: "target",
-          position: Position.Left,
-          style: { backgroundColor: "#f472b6" },
-        }}
-      >
-        <ColorPicker value={color} onChange={handleColorChange} />
-      </ParamField>
+        {/* Color Control */}
+        <div className="space-y-2">
+          <LabeledHandle
+            id="color"
+            type="target"
+            position={Position.Left}
+            title="Color"
+          />
+          <ColorPicker value={color} onChange={handleColorChange} />
+        </div>
+      </BaseNodeContent>
 
-      {/* Output */}
-      <ParamField
-        label="Layer Output"
-        className="bg-gray-100 dark:bg-gray-700"
-        rightHandle={{
-          id: "layer",
-          type: "source",
-          position: Position.Right,
-          style: { backgroundColor: "#4ade80" },
-        }}
-      >
-        <div className="h-4"></div>
-      </ParamField>
-    </div>
+      <BaseNodeFooter>
+        <div className="flex w-full items-center justify-between">
+          <span className="text-xs text-muted-foreground">Output</span>
+          <LabeledHandle
+            id="layer"
+            type="source"
+            position={Position.Right}
+            title="Layer"
+          />
+        </div>
+      </BaseNodeFooter>
+    </BaseNode>
   );
 };
 
@@ -179,9 +176,9 @@ nodeRegistry.register({
     radius: 10,
     color: { r: 255, g: 0, b: 0, a: 1 },
   },
-  component: CircleNodeContent,
+  component: CircleNodeComponent,
   evaluate: evaluateCircleNode,
 });
 
-// Create the circle node component
-export const CircleNode = createNodeComponent("circle");
+// Export the circle node component
+export const CircleNode = CircleNodeComponent;

@@ -6,15 +6,23 @@
 
 import React, { useEffect, useRef } from "react";
 import { NodeComponentProps } from "../../core/registry/NodeRegistry";
-import { createNodeComponent } from "./BaseNode";
 import { nodeRegistry } from "../../core/registry/NodeRegistry";
 import { EvaluationContext } from "../../core/types/evaluation";
 import { Layer } from "../../core/models/Layer";
 import { Position } from "@xyflow/react";
 import { createLayerValue } from "../../core/types/values";
 import { useGraphStore } from "../../core/store/graphStore";
-import { ParamField } from "../ui/param-field";
 import { RGBA } from "../../core/models/Layer";
+
+// Import React Flow UI components
+import {
+  BaseNode,
+  BaseNodeHeader,
+  BaseNodeHeaderTitle,
+  BaseNodeContent,
+  BaseNodeFooter,
+} from "../base-node";
+import { LabeledHandle } from "../labeled-handle";
 
 /**
  * Display node parameters
@@ -28,7 +36,7 @@ export interface DisplayNodeParams {
  *
  * This component displays the final rendered image from the node graph.
  */
-const DisplayNodeContent: React.FC<NodeComponentProps> = ({ id }) => {
+const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const graphStore = useGraphStore();
 
@@ -110,23 +118,23 @@ const DisplayNodeContent: React.FC<NodeComponentProps> = ({ id }) => {
   const layer = getLayer();
 
   return (
-    <div>
-      {/* Input handle */}
-      <ParamField
-        label="Input Layer"
-        className="bg-gray-100 dark:bg-gray-700"
-        leftHandle={{
-          id: "layer",
-          type: "target",
-          position: Position.Left,
-          style: { backgroundColor: "#4ade80" },
-        }}
-      >
-        <div className="h-4"></div>
-      </ParamField>
+    <BaseNode className="w-[250px]">
+      <BaseNodeHeader className="border-b">
+        <BaseNodeHeaderTitle>Display</BaseNodeHeaderTitle>
+      </BaseNodeHeader>
 
-      {/* Canvas output */}
-      <div className="px-3 py-2">
+      <BaseNodeContent>
+        {/* Input handle */}
+        <div className="flex items-center mb-2">
+          <LabeledHandle
+            id="layer"
+            type="target"
+            position={Position.Left}
+            title="Layer"
+          />
+        </div>
+
+        {/* Canvas output */}
         <div className="border border-gray-300 dark:border-gray-700 rounded overflow-hidden">
           {layer ? (
             <canvas
@@ -143,10 +151,9 @@ const DisplayNodeContent: React.FC<NodeComponentProps> = ({ id }) => {
             </div>
           )}
         </div>
-      </div>
+      </BaseNodeContent>
 
-      {/* Download button */}
-      <div className="px-3 pb-3">
+      <BaseNodeFooter>
         <button
           className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!layer}
@@ -162,8 +169,8 @@ const DisplayNodeContent: React.FC<NodeComponentProps> = ({ id }) => {
         >
           Download Image
         </button>
-      </div>
-    </div>
+      </BaseNodeFooter>
+    </BaseNode>
   );
 };
 
@@ -185,15 +192,15 @@ function evaluateDisplayNode(ctx: EvaluationContext) {
 // Register the display node type
 nodeRegistry.register({
   type: "display",
-  label: "Output",
+  label: "Display",
   category: "Output",
   description: "Displays the final output image",
   inputs: [{ id: "layer", label: "Layer", type: "layer", required: true }],
   outputs: [],
   defaultParams: {},
-  component: DisplayNodeContent,
+  component: DisplayNodeComponent,
   evaluate: evaluateDisplayNode,
 });
 
-// Create the display node component
-export const DisplayNode = createNodeComponent("display");
+// Export the display node component
+export const DisplayNode = DisplayNodeComponent;

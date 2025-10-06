@@ -156,6 +156,16 @@ export const useGraphStore = create<GraphState>((set, get) => ({
       return null;
     }
 
+    // Prevent multiple connections to the same target handle
+    const existingTargetConnection = get().edges.find(
+      (edge) => edge.target === target && edge.targetHandle === targetHandle,
+    );
+
+    if (existingTargetConnection) {
+      // Remove the existing connection to the target handle
+      get().removeEdge(existingTargetConnection.id);
+    }
+
     // Create the new edge
     const newEdge: Edge = {
       id: `${source}-${sourceHandle}-${target}-${targetHandle}`,
@@ -175,6 +185,23 @@ export const useGraphStore = create<GraphState>((set, get) => ({
   removeEdge: (id) => {
     set((state) => ({
       edges: state.edges.filter((edge) => edge.id !== id),
+    }));
+  },
+
+  // Remove edges connected to a specific node handle
+  removeEdgesForHandle: (
+    nodeId: NodeId,
+    handleId: string,
+    handleType: "source" | "target",
+  ) => {
+    set((state) => ({
+      edges: state.edges.filter((edge) => {
+        if (handleType === "source") {
+          return !(edge.source === nodeId && edge.sourceHandle === handleId);
+        } else {
+          return !(edge.target === nodeId && edge.targetHandle === handleId);
+        }
+      }),
     }));
   },
 

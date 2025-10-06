@@ -20,6 +20,7 @@ import { Position } from "@xyflow/react";
 import { Slider } from "../ui/slider";
 import { Input } from "../ui/input";
 import { ColorPicker } from "../ui/color-picker";
+import { ParameterRow } from "../ui/parameter-row";
 
 // Import React Flow UI components
 import {
@@ -29,7 +30,7 @@ import {
   BaseNodeContent,
   BaseNodeFooter,
 } from "../base-node";
-import { LabeledHandle } from "../labeled-handle";
+import { BaseHandle } from "../base-handle";
 
 /**
  * Circle node parameters
@@ -74,54 +75,62 @@ const CircleNodeComponent: React.FC<NodeComponentProps> = ({ id, data }) => {
 
       <BaseNodeContent>
         {/* Radius Control */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <LabeledHandle
-              id="radius"
-              type="target"
-              position={Position.Left}
-              title="Radius"
-            />
-            <Input
-              type="number"
-              min={1}
-              max={100}
-              value={radius}
-              onChange={(e) => handleRadiusChange(Number(e.target.value))}
-              className="w-16 h-8"
-            />
+        <ParameterRow
+          leftHandleProps={{
+            id: "radius",
+            type: "target",
+          }}
+        >
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium">Radius</span>
+            <div className="flex justify-between items-center">
+              <Slider
+                min={1}
+                max={100}
+                step={1}
+                value={[radius]}
+                onValueChange={(values) => handleRadiusChange(values[0])}
+                className="flex-1 mr-2"
+              />
+              <Input
+                type="number"
+                min={1}
+                max={100}
+                value={radius}
+                onChange={(e) => handleRadiusChange(Number(e.target.value))}
+                className="w-16 h-8"
+              />
+            </div>
           </div>
-          <Slider
-            min={1}
-            max={100}
-            step={1}
-            value={[radius]}
-            onValueChange={(values) => handleRadiusChange(values[0])}
-          />
-        </div>
+        </ParameterRow>
 
         {/* Color Control */}
-        <div className="space-y-2">
-          <LabeledHandle
-            id="color"
-            type="target"
-            position={Position.Left}
-            title="Color"
-          />
-          <ColorPicker value={color} onChange={handleColorChange} />
-        </div>
+        <ParameterRow
+          label="Color"
+          leftHandleProps={{
+            id: "color",
+            type: "target",
+          }}
+        >
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium">Color</span>
+            <ColorPicker value={color} onChange={handleColorChange} />
+          </div>
+        </ParameterRow>
       </BaseNodeContent>
 
       <BaseNodeFooter>
-        <div className="flex w-full items-center justify-between">
-          <span className="text-xs text-muted-foreground">Output</span>
-          <LabeledHandle
-            id="layer"
-            type="source"
-            position={Position.Right}
-            title="Layer"
-          />
-        </div>
+        <ParameterRow
+          label="Output"
+          rightHandleProps={{
+            id: "layer",
+            type: "source",
+          }}
+        >
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-end">Output</span>
+          </div>
+        </ParameterRow>
       </BaseNodeFooter>
     </BaseNode>
   );

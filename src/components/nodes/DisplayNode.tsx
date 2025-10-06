@@ -9,7 +9,6 @@ import { NodeComponentProps } from "../../core/registry/NodeRegistry";
 import { nodeRegistry } from "../../core/registry/NodeRegistry";
 import { EvaluationContext } from "../../core/types/evaluation";
 import { Layer } from "../../core/models/Layer";
-import { Position } from "@xyflow/react";
 import { createLayerValue } from "../../core/types/values";
 import { useGraphStore } from "../../core/store/graphStore";
 import { RGBA } from "../../core/models/Layer";
@@ -22,7 +21,7 @@ import {
   BaseNodeContent,
   BaseNodeFooter,
 } from "../base-node";
-import { LabeledHandle } from "../labeled-handle";
+import { ParameterRow } from "../ui/parameter-row";
 
 /**
  * Display node parameters
@@ -125,35 +124,37 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
 
       <BaseNodeContent>
         {/* Input handle */}
-        <div className="flex items-center mb-2">
-          <LabeledHandle
-            id="layer"
-            type="target"
-            position={Position.Left}
-            title="Layer"
-          />
-        </div>
+        <ParameterRow
+          leftHandleProps={{
+            id: "layer",
+            type: "target",
+          }}
+        >
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium">Layer Input</span>
 
-        {/* Canvas output */}
-        <div className="border border-gray-300 dark:border-gray-700 rounded overflow-hidden">
-          {layer ? (
-            <canvas
-              ref={canvasRef}
-              className="pixelated" // Apply pixelated rendering
-              style={{
-                width: "100%",
-                imageRendering: "pixelated", // For modern browsers
-              }}
-            />
-          ) : (
-            <div className="h-32 flex items-center justify-center text-sm text-gray-500">
-              Connect a layer to see output
+            {/* Canvas output */}
+            <div className="border border-gray-300 dark:border-gray-700 rounded overflow-hidden">
+              {layer ? (
+                <canvas
+                  ref={canvasRef}
+                  className="pixelated" // Apply pixelated rendering
+                  style={{
+                    width: "100%",
+                    imageRendering: "pixelated", // For modern browsers
+                  }}
+                />
+              ) : (
+                <div className="h-32 flex items-center justify-center text-sm text-gray-500">
+                  Connect a layer to see output
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        </ParameterRow>
       </BaseNodeContent>
 
-      <BaseNodeFooter>
+      <BaseNodeFooter className="px-4">
         <button
           className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!layer}

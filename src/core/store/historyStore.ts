@@ -1,28 +1,19 @@
 /**
  * History Store for the Pi-Gen project
  *
- * This file defines a history store for undo/redo functionality using the command pattern.
+ * This file defines a history store for undo/redo functionality using Zustand.
  */
 
 import { create } from "zustand";
+import { useGraphStore } from "./graphStore";
+import { Node, Edge, NodeId, Position, NodeParams } from "../types/nodes";
 
 /**
  * Command interface for the command pattern
  */
 export interface Command {
-  /**
-   * Execute the command
-   */
   execute: () => void;
-
-  /**
-   * Undo the command
-   */
   undo: () => void;
-
-  /**
-   * Get a description of the command
-   */
   description: string;
 }
 
@@ -57,19 +48,15 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   // Operations
   execute: (command) => {
     command.execute();
-
     set((state) => ({
       past: [...state.past, command],
-      future: [], // Clear the future when a new command is executed
+      future: [],
     }));
   },
 
   undo: () => {
     const { past } = get();
-
-    if (past.length === 0) {
-      return;
-    }
+    if (past.length === 0) return;
 
     const command = past[past.length - 1];
     command.undo();
@@ -82,10 +69,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 
   redo: () => {
     const { future } = get();
-
-    if (future.length === 0) {
-      return;
-    }
+    if (future.length === 0) return;
 
     const command = future[0];
     command.execute();
@@ -97,21 +81,12 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   },
 
   clear: () => {
-    set({
-      past: [],
-      future: [],
-    });
+    set({ past: [], future: [] });
   },
 
   // Utility
-  canUndo: () => {
-    return get().past.length > 0;
-  },
-
-  canRedo: () => {
-    return get().future.length > 0;
-  },
-
+  canUndo: () => get().past.length > 0,
+  canRedo: () => get().future.length > 0,
   getLastCommand: () => {
     const { past } = get();
     return past.length > 0 ? past[past.length - 1] : undefined;
@@ -119,85 +94,195 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 }));
 
 /**
- * Command factory for adding a node
+ * Command factory functions
  */
-export function createAddNodeCommand(
-  execute: () => void,
-  undo: () => void,
+
+/**
+ * Create a command to add a node
+ */
+export function createAddNodeCommand<P extends NodeParams>(
+  type: string,
+  position: Position,
+  params?: Partial<P>,
 ): Command {
+  let nodeId: NodeId | null = null;
+
   return {
-    execute,
-    undo,
-    description: "Add Node",
+    execute: () => {
+      const node = useGraphStore.getState().addNode(type, position, params);
+      nodeId = node.id;
+    },
+    undo: () => {
+      if (nodeId) {
+        useGraphStore.getState().removeNode(nodeId);
+      }
+    },
+    description: `Add ${type} node`,
   };
 }
 
 /**
- * Command factory for removing a node
+ * Create a command to remove a node
  */
-export function createRemoveNodeCommand(
-  execute: () => void,
-  undo: () => void,
-): Command {
+export function createRemoveNodeCommand(id: NodeId): Command {
+  let node: Node | undefined;
+  let connectedEdges: Edge[] = [];
+
   return {
-    execute,
-    undo,
-    description: "Remove Node",
+    execute: () => {
+      const state = useGraphStore.getState();
+      node = state.getNode(id);
+      connectedEdges = state.edges.filter(
+        (edge) => edge.source === id || edge.target === id,
+      );
+      state.removeNode(id);
+    },
+    undo: () => {
+      if (node) {
+        const state = useGraphStore.getState();
+        // Add the node back
+        const newNode = state.addNode(
+          node.type,
+          node.position,
+          node.data.params,
+        );
+
+        // Add the edges back
+        for (const edge of connectedEdges) {
+          if (edge.source === id) {
+            state.addEdge(
+              newNode.id,
+              edge.sourceHandle,
+              edge.target,
+              edge.targetHandle,
+            );
+          } else if (edge.target === id) {
+            state.addEdge(
+              edge.source,
+              edge.sourceHandle,
+              newNode.id,
+              edge.targetHandle,
+            );
+          }
+        }
+      }
+    },
+    description: `Remove node`,
   };
 }
 
 /**
- * Command factory for updating node parameters
+ * Create a command to update node parameters
  */
-export function createUpdateNodeParamsCommand(
-  execute: () => void,
-  undo: () => void,
+export function createUpdateNodeParamsCommand<P extends NodeParams>(
+  id: NodeId,
+  params: Partial<P>,
 ): Command {
+  const previousParams: Partial<P> = {};
+
   return {
-    execute,
-    undo,
-    description: "Update Node Parameters",
+    execute: () => {
+      const state = useGraphStore.getState();
+      const node = state.getNode<P>(id);
+      if (node) {
+        // Save previous values for the parameters being updated
+        for (const key in params) {
+          if (key in node.data.params) {
+            previousParams[key as keyof P] = node.data.params[
+              key as keyof P
+            ] as P[keyof P];
+          }
+        }
+      }
+      state.updateNodeParams(id, params);
+    },
+    undo: () => {
+      useGraphStore.getState().updateNodeParams(id, previousParams);
+    },
+    description: `Update node parameters`,
   };
 }
 
 /**
- * Command factory for moving a node
- */
-export function createMoveNodeCommand(
-  execute: () => void,
-  undo: () => void,
-): Command {
-  return {
-    execute,
-    undo,
-    description: "Move Node",
-  };
-}
-
-/**
- * Command factory for adding an edge
+ * Create a command to add an edge
  */
 export function createAddEdgeCommand(
-  execute: () => void,
-  undo: () => void,
+  source: NodeId,
+  sourceHandle: string,
+  target: NodeId,
+  targetHandle: string,
 ): Command {
+  let edgeId: string | null = null;
+
   return {
-    execute,
-    undo,
-    description: "Add Connection",
+    execute: () => {
+      const edge = useGraphStore
+        .getState()
+        .addEdge(source, sourceHandle, target, targetHandle);
+      if (edge) {
+        edgeId = edge.id;
+      }
+    },
+    undo: () => {
+      if (edgeId) {
+        useGraphStore.getState().removeEdge(edgeId);
+      }
+    },
+    description: `Add connection`,
   };
 }
 
 /**
- * Command factory for removing an edge
+ * Create a command to remove an edge
  */
-export function createRemoveEdgeCommand(
-  execute: () => void,
-  undo: () => void,
-): Command {
+export function createRemoveEdgeCommand(id: string): Command {
+  let edge: Edge | undefined;
+
   return {
-    execute,
-    undo,
-    description: "Remove Connection",
+    execute: () => {
+      const state = useGraphStore.getState();
+      edge = state.getEdge(id);
+      state.removeEdge(id);
+    },
+    undo: () => {
+      if (edge) {
+        useGraphStore
+          .getState()
+          .addEdge(
+            edge.source,
+            edge.sourceHandle,
+            edge.target,
+            edge.targetHandle,
+          );
+      }
+    },
+    description: `Remove connection`,
+  };
+}
+
+/**
+ * Create a command to update node position
+ */
+export function createUpdateNodePositionCommand(
+  id: NodeId,
+  position: Position,
+): Command {
+  let previousPosition: Position | undefined;
+
+  return {
+    execute: () => {
+      const state = useGraphStore.getState();
+      const node = state.getNode(id);
+      if (node) {
+        previousPosition = node.position;
+      }
+      state.updateNodePosition(id, position);
+    },
+    undo: () => {
+      if (previousPosition) {
+        useGraphStore.getState().updateNodePosition(id, previousPosition);
+      }
+    },
+    description: `Move node`,
   };
 }

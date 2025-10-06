@@ -14,36 +14,88 @@ import {
 
 import "@xyflow/react/dist/style.css";
 
-// Import from our new component structure
+// Import node components
 import { CircleNode } from "./components/nodes/CircleNode";
+import { RectangleNode } from "./components/nodes/RectangleNode";
+import { ColorNode } from "./components/nodes/ColorNode";
+import { NumberNode } from "./components/nodes/NumberNode";
 import { DisplayNode } from "./components/nodes/DisplayNode";
+
+// Import core types and stores
 import { RGBA } from "./core/models/Layer";
 import { useGraphStore } from "./core/store/graphStore";
+import { useHistoryStore } from "./core/store/historyStore";
 import { NodeParams } from "./core/types/nodes";
 
 // Define node types for ReactFlow
 const nodeTypes: NodeTypes = {
   circle: CircleNode,
+  rectangle: RectangleNode,
+  color: ColorNode,
+  number: NumberNode,
   display: DisplayNode,
 };
 
-// Create initial nodes using our new architecture
+// Create initial nodes for a more comprehensive example
 const initialNodes: Node[] = [
+  // Color node
   {
-    id: "circle1",
-    type: "circle",
+    id: "color1",
+    type: "color",
     position: { x: 100, y: 100 },
     data: {
       params: {
-        radius: 50,
         color: { r: 255, g: 0, b: 0, a: 1 } as RGBA,
       },
     },
   },
+
+  // Number node for radius
+  {
+    id: "number1",
+    type: "number",
+    position: { x: 100, y: 250 },
+    data: {
+      params: {
+        value: 30,
+        min: 1,
+        max: 100,
+      },
+    },
+  },
+
+  // Circle node
+  {
+    id: "circle1",
+    type: "circle",
+    position: { x: 400, y: 100 },
+    data: {
+      params: {
+        radius: 30,
+        color: { r: 255, g: 0, b: 0, a: 1 } as RGBA,
+      },
+    },
+  },
+
+  // Rectangle node
+  {
+    id: "rectangle1",
+    type: "rectangle",
+    position: { x: 400, y: 300 },
+    data: {
+      params: {
+        width: 40,
+        height: 20,
+        color: { r: 0, g: 128, b: 255, a: 1 } as RGBA,
+      },
+    },
+  },
+
+  // Display node
   {
     id: "output1",
     type: "display",
-    position: { x: 400, y: 100 },
+    position: { x: 700, y: 200 },
     data: {
       params: {},
     },
@@ -52,8 +104,27 @@ const initialNodes: Node[] = [
 
 // Initial edges connecting the nodes
 const initialEdges: Edge[] = [
+  // Connect color to circle
   {
     id: "edge1",
+    source: "color1",
+    sourceHandle: "color",
+    target: "circle1",
+    targetHandle: "color",
+  },
+
+  // Connect number to circle radius
+  {
+    id: "edge2",
+    source: "number1",
+    sourceHandle: "number",
+    target: "circle1",
+    targetHandle: "radius",
+  },
+
+  // Connect circle to display
+  {
+    id: "edge3",
     source: "circle1",
     sourceHandle: "layer",
     target: "output1",
@@ -66,11 +137,14 @@ export default function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  // Graph store state
+  // Graph and history store state
   const graphNodes = useGraphStore((state) => state.nodes);
   const graphEdges = useGraphStore((state) => state.edges);
   const addNode = useGraphStore((state) => state.addNode);
   const addEdgeToStore = useGraphStore((state) => state.addEdge);
+
+  // History store for undo/redo (not fully implemented in UI yet)
+  const historyStore = useHistoryStore();
 
   // Initialize graph store with initial nodes and edges
   useEffect(() => {

@@ -59,11 +59,28 @@ Pi-Gen is a generative pixel art creation tool inspired by Blender's geometry no
 
 ## Architecture
 
-Pi-Gen is built with a clean, type-safe architecture:
+Pi-Gen is built with a clean, type-safe architecture following separation of concerns principles:
 
-- **Core Layer**: Contains the fundamental models, types, and evaluation logic
-- **Node Layer**: Implements specific node types and their evaluation functions
-- **UI Layer**: Provides the visual interface using React Flow
+### Core Architecture
+
+- **UI Layer**: React components for rendering nodes, handles, and the canvas
+  - Located in `src/components/`
+  - Specialized UI components in `src/components/ui/`
+  - Node components in `src/components/nodes/`
+
+- **Domain Layer**: Core business logic and entities
+  - Located in `src/core/models/` and `src/core/types/`
+  - Layer class for pixel manipulation
+  - Value types for type-safe data handling
+
+- **Application Layer**: Services for managing nodes, graphs, and rendering
+  - Located in `src/core/registry/` and `src/core/engine/`
+  - NodeRegistry for managing node types
+  - GraphEvaluator for evaluating the node graph
+
+- **State Management**: Zustand store for application state
+  - Located in `src/core/store/`
+  - GraphStore for managing nodes and edges
 
 ### Component Architecture
 
@@ -87,11 +104,13 @@ The system uses a registry pattern for node types, allowing for easy extension w
 
 ## Technologies
 
-- **React**: UI framework
-- **TypeScript**: Type-safe programming language
-- **React Flow**: Node-based interface library
-- **Vite**: Build tool and development server
-- **shadcn/ui**: UI component library
+- **React**: UI framework for building the interface
+- **TypeScript**: Type-safe programming language with strong typing
+- **ReactFlow (@xyflow/react)**: Node-based interface library for the graph editor
+- **Vite**: Fast build tool and development server
+- **shadcn/ui**: Customizable UI component library
+- **Zustand**: Lightweight state management
+- **Tailwind CSS**: Utility-first CSS framework
 
 ## Contributing
 
@@ -109,10 +128,23 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Roadmap
 
-- Add more shape nodes (Rectangle, Triangle, etc.)
-- Implement transformation nodes (Scale, Rotate, etc.)
+### Phase 1: Core Functionality
+
+- Add Rectangle node
+- Add Color and Number utility nodes
+- Implement proper undo/redo functionality
+- Add project saving/loading
+
+### Phase 2: Enhanced Features
+
+- Add transformation nodes (Scale, Rotate, etc.)
 - Add filter nodes (Blur, Sharpen, etc.)
 - Support for layers and compositing
-- Add animation capabilities
 - Implement node groups for better organization
-- Add undo/redo functionality
+
+### Phase 3: Advanced Features
+
+- Add animation capabilities
+- Add pattern generation nodes
+- Implement custom node creation
+- Add export to multiple formats

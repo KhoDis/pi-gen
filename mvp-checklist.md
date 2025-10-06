@@ -2,41 +2,40 @@
 
 This document outlines the Minimum Viable Product (MVP) features for the Pi-Gen project, prioritized to achieve a functional and valuable pixel art generator with a node-based interface.
 
-## Core MVP Features
+## Current Progress
 
-### Phase 1: Foundation (Must-Have)
+After refactoring and cleanup, we have implemented:
 
-These features form the essential foundation of the application and must be implemented first:
+- [x] **Node Graph Canvas**
+  - [x] Basic canvas with zoom and pan functionality
+  - [x] Node creation and deletion
+  - [x] Node positioning and dragging
+  - [x] Connection creation and deletion
+  - [x] Type-safe connections (prevent incompatible connections)
 
-- [ ] **Node Graph Canvas**
-  - [ ] Basic canvas with zoom and pan functionality
-  - [ ] Node creation and deletion
-  - [ ] Node positioning and dragging
-  - [ ] Connection creation and deletion
-  - [ ] Type-safe connections (prevent incompatible connections)
-
-- [ ] **Core Node Types**
-  - [ ] Output Node (renders final result)
-  - [ ] Shape Nodes:
-    - [ ] Circle Node (generates a circle shape)
-    - [ ] Rectangle Node (generates a rectangle shape)
+- [x] **Core Node Types (Partial)**
+  - [x] Display Node (renders final result)
+  - [x] Circle Node (generates a circle shape)
+  - [ ] Rectangle Node (generates a rectangle shape)
   - [ ] Color Node (provides a color value)
   - [ ] Number Node (provides a numeric value)
 
-- [ ] **Basic Evaluation System**
-  - [ ] Dependency-based evaluation
-  - [ ] Real-time updates when parameters change
-  - [ ] Basic error handling
+- [x] **Basic Evaluation System**
+  - [x] Dependency-based evaluation
+  - [x] Real-time updates when parameters change
+  - [x] Basic error handling
 
-- [ ] **Rendering System**
-  - [ ] Canvas rendering of pixel art
-  - [ ] Pixel scaling options
-  - [ ] Basic Layer system for compositing
+- [x] **Rendering System**
+  - [x] Canvas rendering of pixel art
+  - [x] Pixel scaling options
+  - [x] Basic Layer system for compositing
 
-- [ ] **UI Components**
-  - [ ] Node property editors (sliders, color pickers)
+- [x] **UI Components**
+  - [x] Node property editors (sliders, color pickers)
   - [ ] Basic toolbar for node creation
-  - [ ] Canvas controls (zoom, pan, reset view)
+  - [x] Canvas controls (zoom, pan, reset view)
+
+## Remaining MVP Features
 
 ### Phase 2: Enhanced Functionality (Should-Have)
 
@@ -124,29 +123,40 @@ The MVP will be considered successful when:
 5. Users can save their work and export the resulting pixel art
 6. The application is stable and performs well with moderate-sized graphs
 
-## Simplified First Iteration
+## Implementation Plan for Remaining Features
 
-For the very first working prototype, focus on these core features:
+### 1. Core Node Types
 
-1. **Basic Node Graph**
-   - Create and position nodes
-   - Connect compatible nodes
-   - Delete nodes and connections
+- [ ] Implement Rectangle Node
+  - Similar to Circle Node but with width and height parameters
+  - Add rectangle drawing logic to the evaluator
+- [ ] Implement Color Node
+  - Simple node that outputs a color value
+  - Use the existing color picker component
+- [ ] Implement Number Node
+  - Simple node that outputs a numeric value
+  - Use the existing number parameter component
 
-2. **Minimal Node Set**
-   - Output Node
-   - Circle Node
-   - Color Node
+### 2. UI Improvements
 
-3. **Simple Evaluation**
-   - Basic graph traversal
-   - Real-time updates
+- [ ] Add node creation toolbar
+  - Simple toolbar with buttons for each node type
+  - Drag-and-drop functionality to create nodes
 
-4. **Basic Rendering**
-   - Render to canvas
-   - Export as PNG
+### 3. State Management
 
-This simplified first iteration provides a working foundation that demonstrates the core concept while being achievable in a short timeframe.
+- [ ] Implement undo/redo functionality
+  - Use command pattern for operations
+  - Track history of operations
+- [ ] Add project saving and loading
+  - Serialize graph state to JSON
+  - Load graph state from JSON
+
+### 4. Testing and Refinement
+
+- [ ] Test with various node combinations
+- [ ] Fix any bugs or issues
+- [ ] Optimize performance for larger graphs
 
 ## User Stories for MVP
 

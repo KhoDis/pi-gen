@@ -4,14 +4,13 @@
  * This component displays the final output of the node graph.
  */
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import { NodeComponentProps } from "../../core/registry/NodeRegistry";
 import { nodeRegistry } from "../../core/registry/NodeRegistry";
 import { EvaluationContext } from "../../core/types/evaluation";
-import { Layer } from "../../core/models/Layer";
-import { createLayerValue } from "../../core/types/values";
+import { createLayerValue, isLayerValue } from "../../core/types/values";
 import { useGraphStore } from "../../core/store/graphStore";
-import { RGBA } from "../../core/models/Layer";
+import { createGraphEvaluator } from "../../core/engine/GraphEvaluator";
 
 // Import specialized parameter components
 import { NodeInput } from "../ui/node-input";
@@ -51,45 +50,38 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
     ? graphStore.nodes.find((node) => node.id === inputEdge.source)
     : undefined;
 
-  // Function to evaluate the graph and get the layer
-  const getLayer = (): Layer | undefined => {
-    if (!sourceNode) return undefined;
+  // Use the GraphEvaluator to evaluate the graph and get the layer
+  const layer = useMemo(() => {
+    if (!inputEdge || !sourceNode) return undefined;
 
-    // In a real implementation, this would use the graph evaluator
-    // For now, we'll create a simple circle as a placeholder
-    const radius = (sourceNode.data.params?.radius as number) || 10;
-    const color = (sourceNode.data.params?.color as RGBA) || {
-      r: 255,
-      g: 0,
-      b: 0,
-      a: 1,
-    };
+    try {
+      // Create a graph evaluator with the current nodes and edges
+      const evaluator = createGraphEvaluator(
+        graphStore.nodes,
+        graphStore.edges,
+      );
 
-    const size = radius * 2;
-    const layer = new Layer(size, size);
-    const centerX = radius;
-    const centerY = radius;
+      // Evaluate the graph starting from this node
+      const results = evaluator.evaluateNode(id);
 
-    // Draw the circle
-    for (let x = 0; x < size; x++) {
-      for (let y = 0; y < size; y++) {
-        const dx = x - centerX;
-        const dy = y - centerY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+      // Get the layer from the input
+      const layerValue = results.layer;
 
-        if (distance <= radius) {
-          layer.setPixel(x, y, color);
-        }
+      // Return the layer if it exists
+      if (layerValue && isLayerValue(layerValue)) {
+        return layerValue.value;
       }
+
+      return undefined;
+    } catch (error) {
+      console.error("Error evaluating graph:", error);
+      return undefined;
     }
+  }, [id, sourceNode, inputEdge, graphStore.nodes, graphStore.edges]);
 
-    return layer;
-  };
-
-  // Render the layer to the canvas
+  // Render the layer to the canvas when it changes
   useEffect(() => {
     const canvas = canvasRef.current;
-    const layer = getLayer();
 
     if (!canvas || !layer) return;
 
@@ -113,10 +105,7 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
         }
       }
     }
-  }, [sourceNode, graphStore.edges, graphStore.nodes]);
-
-  // Get the layer for rendering
-  const layer = getLayer();
+  }, [layer]);
 
   return (
     <BaseNode className="w-[250px]">

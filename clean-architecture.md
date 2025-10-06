@@ -1,10 +1,10 @@
 # Clean Architecture for Pi-Gen
 
-This document outlines a cleaner architecture and component structure for the Pi-Gen project, addressing the issues identified in the architecture analysis.
+This document outlines the clean architecture implemented in the Pi-Gen project, providing a solid foundation for maintainability and extensibility.
 
 ## Architecture Overview
 
-The proposed architecture follows a clean, layered approach with clear separation of concerns:
+The implemented architecture follows a clean, layered approach with clear separation of concerns:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -76,7 +76,7 @@ Provides technical capabilities to support the other layers.
 
 Services:
 
-- **StateStore**: Manages application state (using Redux or Context API)
+- **StateStore**: Manages application state (using Zustand)
 - **Persistence**: Handles saving and loading node graphs
 - **CanvasRenderer**: Handles low-level canvas rendering
 
@@ -193,24 +193,29 @@ Services:
 /src
   /components          # UI components
     /nodes             # Node UI components
-    /edges             # Edge UI components
-    /canvas            # Canvas UI components
-    /controls          # Control panel components
-  /services            # Application services
-    /node              # Node-related services
-    /graph             # Graph-related services
-    /rendering         # Rendering-related services
-  /domain              # Domain models and logic
+    /ui                # Reusable UI components
+    /base-node.tsx     # Base node component
+    /base-handle.tsx   # Base handle component
+  /core                # Core functionality
+    /engine            # Graph evaluation engine
+      /GraphEvaluator.ts
     /models            # Domain models
-    /evaluators        # Node evaluation logic
-  /infrastructure      # Infrastructure services
-    /state             # State management
-    /persistence       # Persistence services
-    /rendering         # Low-level rendering
-  /utils               # Utility functions
-  /hooks               # Custom React hooks
-  /types               # TypeScript type definitions
-  /constants           # Constants and configuration
+      /Layer.ts
+    /registry          # Node registry
+      /NodeRegistry.ts
+    /store             # State management
+      /graphStore.ts
+      /historyStore.ts
+    /types             # TypeScript type definitions
+      /nodes.ts
+      /values.ts
+      /evaluation.ts
+    /hooks             # Custom React hooks
+      /useNodeParams.ts
+  /lib                 # Utility functions
+    /utils.ts
+  /edges               # Edge definitions
+  /evaluators          # Node evaluation logic
 ```
 
 ## Key Interfaces
@@ -218,89 +223,152 @@ Services:
 ### NodeType Interface
 
 ```typescript
-interface NodeType {
-  id: string;
-  name: string;
+export interface NodeType<P extends NodeParams = NodeParams> {
+  /**
+   * Unique identifier for the node type
+   */
+  type: string;
+
+  /**
+   * Display name for the node type
+   */
+  label: string;
+
+  /**
+   * Category for grouping node types
+   */
   category: string;
+
+  /**
+   * Description of the node type
+   */
   description: string;
-  inputs: InputDefinition[];
-  outputs: OutputDefinition[];
-  defaultValues: Record<string, any>;
-  evaluate: (inputs: Record<string, any>) => Record<string, any>;
-  render: (props: NodeRenderProps) => JSX.Element;
-}
 
-interface InputDefinition {
-  id: string;
-  name: string;
-  type: ValueType;
-  required: boolean;
-  defaultValue?: any;
-}
+  /**
+   * Input port definitions
+   */
+  inputs: Port[];
 
-interface OutputDefinition {
-  id: string;
-  name: string;
-  type: ValueType;
-}
+  /**
+   * Output port definitions
+   */
+  outputs: Port[];
 
-type ValueType =
-  | "number"
-  | "color"
-  | "layer"
-  | "boolean"
-  | "string"
-  | "vector2";
+  /**
+   * Default parameter values
+   */
+  defaultParams: P;
+
+  /**
+   * Component renderer function
+   */
+  component: React.ComponentType<{
+    id: NodeId;
+    data: NodeData<P>;
+    selected: boolean;
+  }>;
+
+  /**
+   * Evaluation function
+   */
+  evaluate: (ctx: EvaluationContext) => EvaluationResult;
+}
 ```
 
-### Node Interface
+### Value Types
 
 ```typescript
-interface Node {
-  id: string;
-  type: string;
-  position: { x: number; y: number };
-  data: {
-    values: Record<string, any>;
+/**
+ * Base interface for all value types
+ */
+export interface Value {
+  readonly type: string;
+  readonly value: unknown;
+}
+
+/**
+ * Number value
+ */
+export interface NumberValue extends Value {
+  readonly type: "number";
+  readonly value: number;
+}
+
+/**
+ * Color value (RGBA)
+ */
+export interface ColorValue extends Value {
+  readonly type: "color";
+  readonly value: {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
   };
 }
+
+/**
+ * Layer value
+ */
+export interface LayerValue extends Value {
+  readonly type: "layer";
+  readonly value: Layer;
+}
 ```
 
-### Graph Interface
+### Layer Implementation
 
 ```typescript
-interface Graph {
-  nodes: Node[];
-  edges: Edge[];
-}
+/**
+ * Layer class for pixel manipulation
+ */
+export class Layer {
+  readonly width: number;
+  readonly height: number;
+  private readonly pixels: Map<string, RGBA>;
 
-interface Edge {
-  id: string;
-  source: string;
-  sourceHandle: string;
-  target: string;
-  targetHandle: string;
+  /**
+   * Create a new Layer
+   * @param width Width of the layer in pixels
+   * @param height Height of the layer in pixels
+   */
+  constructor(width: number, height: number) {
+    this.width = width;
+    this.height = height;
+    this.pixels = new Map();
+  }
+
+  /**
+   * Set a pixel at the specified coordinates
+   * @param x X coordinate
+   * @param y Y coordinate
+   * @param color RGBA color
+   */
+  setPixel(x: number, y: number, color: RGBA): void {
+    if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
+      this.pixels.set(`${x}:${y}`, { ...color });
+    }
+  }
+
+  /**
+   * Get the color of a pixel at the specified coordinates
+   * @param x X coordinate
+   * @param y Y coordinate
+   * @returns RGBA color or null if the pixel is not set
+   */
+  getPixel(x: number, y: number): RGBA | null {
+    const pixel = this.pixels.get(`${x}:${y}`);
+    return pixel ? { ...pixel } : null;
+  }
+
+  /**
+   * Convert the layer to ImageData for canvas rendering
+   * @returns ImageData representation of the layer
+   */
+  toImageData(): ImageData {
+    // Implementation details...
+  }
 }
 ```
 
-### Layer Interface
-
-```typescript
-interface Layer {
-  width: number;
-  height: number;
-  setPixel(x: number, y: number, color: RGBA): void;
-  getPixel(x: number, y: number): RGBA;
-  clear(color?: RGBA): void;
-  toImageData(): ImageData;
-}
-
-interface RGBA {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
-}
-```
-
-This clean architecture provides a solid foundation for the Pi-Gen project, addressing the issues identified in the current implementation while providing a clear path for future development.
+This clean architecture has been implemented in the Pi-Gen project, providing a solid foundation for maintainability and extensibility. The separation of concerns, type-safe interfaces, and modular design make it easy to add new features and node types.

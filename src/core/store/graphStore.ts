@@ -13,6 +13,7 @@ import {
   Position,
   NodeParams,
   NodeData,
+  HandleType,
 } from "../types/nodes";
 import { nodeRegistry } from "../registry/NodeRegistry";
 
@@ -46,6 +47,11 @@ interface GraphState {
     targetHandle: string,
   ) => Edge | null;
   removeEdge: (id: string) => void;
+  removeEdgesForHandle: (
+    nodeId: NodeId,
+    handleId: string,
+    handleType: HandleType,
+  ) => void;
 
   // Selection operations
   selectNode: (id: NodeId) => void;
@@ -173,6 +179,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
       sourceHandle,
       target,
       targetHandle,
+      type: "removable",
     };
 
     set((state) => ({

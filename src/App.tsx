@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -13,6 +13,7 @@ import {
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
+import { edgeTypes } from "./edges";
 
 // Import node components
 import { CircleNode } from "./components/nodes/CircleNode";
@@ -111,6 +112,7 @@ const initialEdges: Edge[] = [
     sourceHandle: "color",
     target: "circle1",
     targetHandle: "color",
+    type: "removable",
   },
 
   // Connect number to circle radius
@@ -120,6 +122,7 @@ const initialEdges: Edge[] = [
     sourceHandle: "number",
     target: "circle1",
     targetHandle: "radius",
+    type: "removable",
   },
 
   // Connect circle to display
@@ -129,6 +132,7 @@ const initialEdges: Edge[] = [
     sourceHandle: "layer",
     target: "output1",
     targetHandle: "layer",
+    type: "removable",
   },
 ];
 
@@ -136,6 +140,7 @@ export default function App() {
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
 
   // Graph and history store state
   const graphNodes = useGraphStore((state) => state.nodes);
@@ -143,8 +148,8 @@ export default function App() {
   const addNode = useGraphStore((state) => state.addNode);
   const addEdgeToStore = useGraphStore((state) => state.addEdge);
 
-  // History store for undo/redo (not fully implemented in UI yet)
-  const historyStore = useHistoryStore();
+  // History store for undo/redo
+  useHistoryStore();
 
   // Initialize graph store with initial nodes and edges
   useEffect(() => {
@@ -197,26 +202,61 @@ export default function App() {
   const onConnect: OnConnect = useCallback(
     (connection) => {
       if (connection.source && connection.target) {
-        addEdgeToStore(
+        // Create edge with removable type
+        const edge = addEdgeToStore(
           connection.source,
           connection.sourceHandle || "",
           connection.target,
           connection.targetHandle || "",
         );
+
+        // Update the edge type if it was created
+        if (edge) {
+          setEdges((eds) =>
+            eds.map((e) =>
+              e.id === edge.id ? { ...e, type: "removable" } : e,
+            ),
+          );
+        }
       }
     },
-    [addEdgeToStore],
+    [addEdgeToStore, setEdges],
   );
+
+  // Handle edge hover events
+  const onEdgeMouseEnter = useCallback((_: React.MouseEvent, edge: Edge) => {
+    setHoveredEdgeId(edge.id);
+  }, []);
+
+  const onEdgeMouseLeave = useCallback(() => {
+    setHoveredEdgeId(null);
+  }, []);
+
+  // Update edges with hovered state
+  useEffect(() => {
+    setEdges((eds) =>
+      eds.map((edge) => ({
+        ...edge,
+        data: {
+          ...edge.data,
+          isHovered: edge.id === hoveredEdgeId,
+        },
+      })),
+    );
+  }, [hoveredEdgeId, setEdges]);
 
   return (
     <div className="h-screen w-screen">
       <ReactFlow
         nodes={nodes}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         edges={edges}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onEdgeMouseEnter={onEdgeMouseEnter}
+        onEdgeMouseLeave={onEdgeMouseLeave}
         fitView
         maxZoom={1.5}
         minZoom={0.5}

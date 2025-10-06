@@ -1,4 +1,5 @@
 import type { Edge, EdgeTypes } from "@xyflow/react";
+import { RemovableEdge } from "../components/removable-edge";
 
 // Initial edges for the graph
 export const initialEdges: Edge[] = [
@@ -9,10 +10,11 @@ export const initialEdges: Edge[] = [
     target: "output1",
     targetHandle: "layer",
     animated: true,
+    type: "removable", // Use our custom edge type
   },
 ];
 
 // Custom edge types
 export const edgeTypes = {
-  // Add your custom edge types here
+  removable: RemovableEdge,
 } satisfies EdgeTypes;

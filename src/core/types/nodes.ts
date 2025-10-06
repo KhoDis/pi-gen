@@ -4,7 +4,6 @@
  * This file defines the type system for nodes, handles, and connections.
  */
 
-import { Value } from "./values";
 import { EvaluationContext, EvaluationResult } from "./evaluation";
 
 /**
@@ -16,6 +15,11 @@ export type NodeId = string;
  * Unique identifier for handles
  */
 export type HandleId = string;
+
+/**
+ * Handle type (source or target)
+ */
+export type HandleType = "source" | "target";
 
 /**
  * Position in 2D space
@@ -58,6 +62,7 @@ export interface Edge {
   sourceHandle: HandleId;
   target: NodeId;
   targetHandle: HandleId;
+  type?: string;
 }
 
 /**

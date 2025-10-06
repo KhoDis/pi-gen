@@ -13,6 +13,9 @@ import { createLayerValue } from "../../core/types/values";
 import { useGraphStore } from "../../core/store/graphStore";
 import { RGBA } from "../../core/models/Layer";
 
+// Import specialized parameter components
+import { NodeInput } from "../ui/node-input";
+
 // Import React Flow UI components
 import {
   BaseNode,
@@ -21,7 +24,6 @@ import {
   BaseNodeContent,
   BaseNodeFooter,
 } from "../base-node";
-import { ParameterRow } from "../ui/parameter-row";
 
 /**
  * Display node parameters
@@ -123,35 +125,25 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
       </BaseNodeHeader>
 
       <BaseNodeContent>
-        {/* Input handle */}
-        <ParameterRow
-          leftHandleProps={{
-            id: "layer",
-            type: "target",
-          }}
-        >
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium">Layer Input</span>
-
-            {/* Canvas output */}
-            <div className="border border-gray-300 dark:border-gray-700 rounded overflow-hidden">
-              {layer ? (
-                <canvas
-                  ref={canvasRef}
-                  className="pixelated" // Apply pixelated rendering
-                  style={{
-                    width: "100%",
-                    imageRendering: "pixelated", // For modern browsers
-                  }}
-                />
-              ) : (
-                <div className="h-32 flex items-center justify-center text-sm text-gray-500">
-                  Connect a layer to see output
-                </div>
-              )}
-            </div>
+        {/* Input Parameter with Canvas */}
+        <NodeInput id="layer" label="Layer Input">
+          <div className="border border-gray-300 dark:border-gray-700 rounded overflow-hidden mt-2">
+            {layer ? (
+              <canvas
+                ref={canvasRef}
+                className="pixelated" // Apply pixelated rendering
+                style={{
+                  width: "100%",
+                  imageRendering: "pixelated", // For modern browsers
+                }}
+              />
+            ) : (
+              <div className="h-32 flex items-center justify-center text-sm text-gray-500">
+                Connect a layer to see output
+              </div>
+            )}
           </div>
-        </ParameterRow>
+        </NodeInput>
       </BaseNodeContent>
 
       <BaseNodeFooter className="px-4">

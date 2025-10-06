@@ -65,6 +65,24 @@ Pi-Gen is built with a clean, type-safe architecture:
 - **Node Layer**: Implements specific node types and their evaluation functions
 - **UI Layer**: Provides the visual interface using React Flow
 
+### Component Architecture
+
+The UI components follow a specialized, composable architecture:
+
+- **Base Components**:
+  - `BaseNode`: The foundation for all node components
+  - `BaseNodeHeader`: Consistent header for nodes
+  - `BaseNodeContent`: Content area with proper padding for handles
+  - `BaseNodeFooter`: Footer area for nodes
+
+- **Parameter Components**:
+  - `NodeInput`: Specialized component for input parameters with left-side handles
+  - `NodeOutput`: Specialized component for output parameters with right-side handles
+  - `NumberParameter`: Component for numeric inputs with slider and input field
+  - `ColorParameter`: Component for color inputs with color picker
+
+This architecture ensures consistent styling and behavior across all nodes while providing a clean, type-safe API for node developers.
+
 The system uses a registry pattern for node types, allowing for easy extension with new node types.
 
 ## Technologies

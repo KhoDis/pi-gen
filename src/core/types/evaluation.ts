@@ -6,8 +6,7 @@
 
 import { NodeId, NodeParams } from "./nodes";
 import { Value } from "./values";
-import { RGBA } from "../models/Layer";
-import { Layer } from "../models/Layer";
+import { RGBA, Layer } from "../models";
 
 /**
  * Evaluation context provided to node evaluators

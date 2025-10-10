@@ -8,8 +8,7 @@ import { Node, Edge, NodeId, NodeParams } from "../types/nodes";
 import { Value } from "../types/values";
 import { EvaluationContext } from "../types/evaluation";
 import { nodeRegistry } from "../registry/NodeRegistry";
-import { RGBA } from "../models/Layer";
-import { Layer } from "../models/Layer";
+import { RGBA, Layer } from "../models";
 
 /**
  * Result cache for node evaluation

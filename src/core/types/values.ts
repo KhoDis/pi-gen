@@ -5,7 +5,7 @@
  * It uses a clean interface-based approach instead of complex conditional types.
  */
 
-import { Layer } from "../models/Layer";
+import { Layer } from "../models";
 
 /**
  * Base interface for all value types

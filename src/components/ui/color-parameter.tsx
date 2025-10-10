@@ -6,7 +6,7 @@
  */
 
 import React from "react";
-import { RGBA } from "@/core/models/Layer";
+import { RGBA } from "@/core/models";
 import { ColorPicker } from "./color-picker";
 import { NodeInput } from "./node-input";
 

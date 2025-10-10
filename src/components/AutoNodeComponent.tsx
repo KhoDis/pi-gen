@@ -14,7 +14,7 @@ import { NumberParameter } from "@/components/ui/number-parameter";
 import { ColorParameter } from "@/components/ui/color-parameter";
 import { Input } from "@/components/ui/input";
 import type { NodeComponentProps } from "@/core/registry/NodeRegistry";
-import type { RGBA } from "@/core/models/Layer";
+import type { RGBA } from "@/core/models";
 
 /**
  * AutoNodeComponent renders a node UI automatically from its registry config.

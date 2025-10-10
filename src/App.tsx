@@ -20,7 +20,7 @@ import { edgeTypes } from "./edges";
 import "./nodes/auto-register";
 
 // Import core types and stores
-import { RGBA } from "./core/models/Layer";
+import { RGBA } from "./core/models";
 import { useGraphStore } from "./core/store/graphStore";
 import { useHistoryStore } from "./core/store/historyStore";
 import { NodeParams } from "./core/types/nodes";

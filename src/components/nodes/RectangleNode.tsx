@@ -1,119 +1,11 @@
 /**
- * Rectangle Node Component for the Pi-Gen project
- *
- * This component implements a node that generates a rectangle shape.
+ * Rectangle node evaluation and registration for the Pi-Gen project
  */
-
-import React, { useCallback } from "react";
-import { NodeComponentProps } from "../../core/registry/NodeRegistry";
-import { useGraphStore } from "../../core/store/graphStore";
-import { RGBA } from "../../core/models/Layer";
 import { Layer } from "../../core/models/Layer";
 import { createLayerValue } from "../../core/types/values";
 import { nodeRegistry } from "../../core/registry/NodeRegistry";
+
 import { EvaluationContext } from "../../core/types/evaluation";
-import { NodeParams } from "../../core/types/nodes";
-import { useNodeParams } from "../../core/hooks/useNodeParams";
-
-// Import specialized parameter components
-import { NumberParameter } from "../ui/number-parameter";
-import { ColorParameter } from "../ui/color-parameter";
-import { NodeOutput } from "../ui/node-output";
-
-// Import React Flow UI components
-import {
-  BaseNode,
-  BaseNodeHeader,
-  BaseNodeHeaderTitle,
-  BaseNodeContent,
-  BaseNodeFooter,
-} from "../base-node";
-
-/**
- * Rectangle node parameters
- */
-export interface RectangleNodeParams extends NodeParams {
-  width: number;
-  height: number;
-  color: RGBA;
-}
-
-/**
- * Rectangle node component
- *
- * This component provides the parameter controls for a rectangle node.
- */
-const RectangleNodeComponent: React.FC<NodeComponentProps> = ({ id, data }) => {
-  const updateNodeParams = useGraphStore((state) => state.updateNodeParams);
-
-  // Get parameters with proper typing and default values
-  const params = useNodeParams<RectangleNodeParams>("rectangle", data);
-  const { width, height, color } = params;
-
-  // Handle parameter changes
-  const handleWidthChange = useCallback(
-    (value: number) => {
-      updateNodeParams(id, { width: value });
-    },
-    [id, updateNodeParams],
-  );
-
-  const handleHeightChange = useCallback(
-    (value: number) => {
-      updateNodeParams(id, { height: value });
-    },
-    [id, updateNodeParams],
-  );
-
-  const handleColorChange = useCallback(
-    (value: RGBA) => {
-      updateNodeParams(id, { color: value });
-    },
-    [id, updateNodeParams],
-  );
-
-  return (
-    <BaseNode className="w-[250px]">
-      <BaseNodeHeader className="border-b">
-        <BaseNodeHeaderTitle>Rectangle</BaseNodeHeaderTitle>
-      </BaseNodeHeader>
-
-      <BaseNodeContent>
-        {/* Input Parameters */}
-        <NumberParameter
-          id="width"
-          label="Width"
-          value={width}
-          onChange={handleWidthChange}
-          min={1}
-          max={100}
-        />
-
-        <NumberParameter
-          id="height"
-          label="Height"
-          value={height}
-          onChange={handleHeightChange}
-          min={1}
-          max={100}
-        />
-
-        <ColorParameter
-          id="color"
-          label="Color"
-          value={color}
-          onChange={handleColorChange}
-        />
-      </BaseNodeContent>
-
-      <BaseNodeFooter>
-        {/* Output Parameters */}
-        <NodeOutput id="layer" label="Layer" />
-      </BaseNodeFooter>
-    </BaseNode>
-  );
-};
-
 /**
  * Rectangle node evaluator function
  */
@@ -159,6 +51,4 @@ nodeRegistry.register({
   },
   evaluate: evaluateRectangleNode,
 });
-
-// Export the rectangle node component
-export const RectangleNode = RectangleNodeComponent;
+// No custom React component needed; AutoNodeComponent will render UI

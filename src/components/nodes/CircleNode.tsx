@@ -1,99 +1,10 @@
 /**
- * Circle Node Component for the Pi-Gen project
- *
- * This component implements a node that generates a circle shape.
+ * Circle node evaluation and registration for the Pi-Gen project
  */
-
-import React, { useCallback } from "react";
-import { NodeComponentProps } from "../../core/registry/NodeRegistry";
-import { useGraphStore } from "../../core/store/graphStore";
-import { RGBA } from "../../core/models/Layer";
 import { Layer } from "../../core/models/Layer";
 import { createLayerValue } from "../../core/types/values";
 import { nodeRegistry } from "../../core/registry/NodeRegistry";
 import { EvaluationContext } from "../../core/types/evaluation";
-import { NodeParams } from "../../core/types/nodes";
-import { useNodeParams } from "../../core/hooks/useNodeParams";
-
-// Import specialized parameter components
-import { NumberParameter } from "../ui/number-parameter";
-import { ColorParameter } from "../ui/color-parameter";
-import { NodeOutput } from "../ui/node-output";
-
-// Import React Flow UI components
-import {
-  BaseNode,
-  BaseNodeHeader,
-  BaseNodeHeaderTitle,
-  BaseNodeContent,
-  BaseNodeFooter,
-} from "../base-node";
-
-/**
- * Circle node parameters
- */
-export interface CircleNodeParams extends NodeParams {
-  radius: number;
-  color: RGBA;
-}
-
-/**
- * Circle node component
- *
- * This component provides the parameter controls for a circle node.
- */
-const CircleNodeComponent: React.FC<NodeComponentProps> = ({ id, data }) => {
-  const updateNodeParams = useGraphStore((state) => state.updateNodeParams);
-
-  // Get parameters with proper typing and default values
-  const params = useNodeParams<CircleNodeParams>("circle", data);
-  const { radius, color } = params;
-
-  // Handle parameter changes
-  const handleRadiusChange = useCallback(
-    (value: number) => {
-      updateNodeParams(id, { radius: value });
-    },
-    [id, updateNodeParams],
-  );
-
-  const handleColorChange = useCallback(
-    (value: RGBA) => {
-      updateNodeParams(id, { color: value });
-    },
-    [id, updateNodeParams],
-  );
-
-  return (
-    <BaseNode className="w-[250px]">
-      <BaseNodeHeader className="border-b">
-        <BaseNodeHeaderTitle>Circle</BaseNodeHeaderTitle>
-      </BaseNodeHeader>
-
-      <BaseNodeContent>
-        {/* Input Parameters */}
-        <NumberParameter
-          id="radius"
-          label="Radius"
-          value={radius}
-          onChange={handleRadiusChange}
-        />
-
-        <ColorParameter
-          id="color"
-          label="Color"
-          value={color}
-          onChange={handleColorChange}
-        />
-      </BaseNodeContent>
-
-      <BaseNodeFooter>
-        {/* Output Parameters */}
-        <NodeOutput id="layer" label="Layer" />
-      </BaseNodeFooter>
-    </BaseNode>
-  );
-};
 
 /**
  * Circle node evaluator function
@@ -146,6 +57,3 @@ nodeRegistry.register({
   },
   evaluate: evaluateCircleNode,
 });
-
-// Export the circle node component
-export const CircleNode = CircleNodeComponent;

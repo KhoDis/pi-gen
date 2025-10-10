@@ -6,8 +6,8 @@
  */
 
 import React from "react";
-import { Input } from "./input";
-import { NodeInput } from "./node-input";
+import { Input } from "@/components/ui/input";
+import { NodeInput } from "@/components/ui/node-input";
 
 export interface NumberParameterProps {
   /** ID for the input handle */

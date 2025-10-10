@@ -5,8 +5,8 @@
  */
 
 import { create } from "zustand";
-import { useGraphStore } from "./graphStore";
-import { Node, Edge, NodeId, Position, NodeParams } from "../types/nodes";
+import { useGraphStore } from "@/core/store/graphStore";
+import { Node, Edge, NodeId, Position, NodeParams } from "@/core/types/nodes";
 
 /**
  * Command interface for the command pattern

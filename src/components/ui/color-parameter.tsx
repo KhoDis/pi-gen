@@ -7,8 +7,8 @@
 
 import React from "react";
 import { RGBA } from "@/core/models";
-import { ColorPicker } from "./color-picker";
-import { NodeInput } from "./node-input";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { NodeInput } from "@/components/ui/node-input";
 
 export interface ColorParameterProps {
   /** ID for the input handle */

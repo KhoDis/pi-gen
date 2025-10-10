@@ -14,8 +14,8 @@ import {
   NodeParams,
   NodeData,
   HandleType,
-} from "../types/nodes";
-import { nodeRegistry } from "../registry/NodeRegistry";
+} from "@/core/types/nodes";
+import { nodeRegistry } from "@/core/registry/NodeRegistry";
 
 /**
  * Interface for the graph state

@@ -1,9 +1,9 @@
 /**
  * Color node evaluation and registration for the Pi-Gen project
  */
-import { createColorValue } from "../../core/types/values";
-import { nodeRegistry } from "../../core/registry/NodeRegistry";
-import { EvaluationContext } from "../../core/types/evaluation";
+import { createColorValue } from "@/core/types/values";
+import { nodeRegistry } from "@/core/registry/NodeRegistry";
+import { EvaluationContext } from "@/core/types/evaluation";
 
 /**
  * Color node evaluator function

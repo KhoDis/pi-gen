@@ -13,21 +13,21 @@ import {
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
-import { edgeTypes } from "./edges";
+import { edgeTypes } from "@/edges";
 
 // Import node components
 // Auto-register all nodes via glob side-effects
 import "./nodes/auto-register";
 
 // Import core types and stores
-import { RGBA } from "./core/models";
-import { useGraphStore } from "./core/store/graphStore";
-import { useHistoryStore } from "./core/store/historyStore";
-import { NodeParams } from "./core/types/nodes";
-import { nodeRegistry } from "./core/registry/NodeRegistry";
-import AutoNodeComponent from "./components/AutoNodeComponent";
-import NodePalette from "./components/NodePalette";
-import GraphActions from "./components/GraphActions";
+import { RGBA } from "@/core/models";
+import { useGraphStore } from "@/core/store/graphStore";
+import { useHistoryStore } from "@/core/store/historyStore";
+import { NodeParams } from "@/core/types/nodes";
+import { nodeRegistry } from "@/core/registry/NodeRegistry";
+import AutoNodeComponent from "@/components/AutoNodeComponent";
+import NodePalette from "@/components/NodePalette";
+import GraphActions from "@/components/GraphActions";
 
 // Define node types for ReactFlow
 // Build nodeTypes map from registry, falling back to AutoNodeComponent

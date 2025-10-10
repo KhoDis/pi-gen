@@ -5,12 +5,12 @@
  */
 
 import React, { useEffect, useRef, useMemo } from "react";
-import { NodeComponentProps } from "../../core/registry/NodeRegistry";
-import { nodeRegistry } from "../../core/registry/NodeRegistry";
-import { EvaluationContext } from "../../core/types/evaluation";
-import { createLayerValue, isLayerValue } from "../../core/types/values";
-import { useGraphStore } from "../../core/store/graphStore";
-import { createGraphEvaluator } from "../../core/engine/GraphEvaluator";
+import { NodeComponentProps } from "@/core/registry/NodeRegistry";
+import { nodeRegistry } from "@/core/registry/NodeRegistry";
+import { EvaluationContext } from "@/core/types/evaluation";
+import { createLayerValue, isLayerValue } from "@/core/types/values";
+import { useGraphStore } from "@/core/store/graphStore";
+import { createGraphEvaluator } from "@/core/engine/GraphEvaluator";
 
 // Import specialized parameter components
 import { NodeInput } from "../ui/node-input";

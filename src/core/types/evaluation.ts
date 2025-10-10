@@ -4,9 +4,9 @@
  * This file defines types related to the evaluation of nodes in the graph.
  */
 
-import { NodeId, NodeParams } from "./nodes";
-import { Value } from "./values";
-import { RGBA, Layer } from "../models";
+import { NodeId, NodeParams } from "@/core/types/nodes";
+import { Value } from "@/core/types/values";
+import { RGBA, Layer } from "@/core/models";
 
 /**
  * Evaluation context provided to node evaluators

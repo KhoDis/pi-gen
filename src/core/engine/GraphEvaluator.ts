@@ -4,10 +4,10 @@
  * This file defines the graph evaluator that processes the node graph and computes results.
  */
 
-import { Node, Edge, NodeId, NodeParams } from "../types/nodes";
-import { Value } from "../types/values";
-import { EvaluationContext } from "../types/evaluation";
-import { nodeRegistry } from "../registry/NodeRegistry";
+import { Node, Edge, NodeId, NodeParams } from "@/core/types/nodes";
+import { Value } from "@/core/types/values";
+import { EvaluationContext } from "@/core/types/evaluation";
+import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import { RGBA, Layer } from "../models";
 
 /**

@@ -1,5 +1,5 @@
 import type { EdgeTypes } from "@xyflow/react";
-import { RemovableEdge } from "../components/removable-edge";
+import { RemovableEdge } from "@/components/removable-edge";
 
 // Custom edge types
 export const edgeTypes = {

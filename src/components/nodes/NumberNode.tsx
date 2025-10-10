@@ -1,9 +1,9 @@
 /**
  * Number node evaluation and registration for the Pi-Gen project
  */
-import { createNumberValue } from "../../core/types/values";
-import { nodeRegistry } from "../../core/registry/NodeRegistry";
-import { EvaluationContext } from "../../core/types/evaluation";
+import { createNumberValue } from "@/core/types/values";
+import { nodeRegistry } from "@/core/registry/NodeRegistry";
+import { EvaluationContext } from "@/core/types/evaluation";
 
 /**
  * Number node evaluator function

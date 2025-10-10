@@ -5,7 +5,7 @@
  * and retrieval of node types.
  */
 
-import { NodeParams, NodeType, NodeId, NodeData } from "../types/nodes";
+import { NodeParams, NodeType, NodeId, NodeData } from "@/core/types/nodes";
 import React from "react";
 
 /**

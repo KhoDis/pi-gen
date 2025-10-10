@@ -5,8 +5,8 @@
  * maintaining a single source of truth for default values in the node registry.
  */
 
-import { NodeData, NodeParams } from "../types/nodes";
-import { nodeRegistry } from "../registry/NodeRegistry";
+import { NodeData, NodeParams } from "@/core/types/nodes";
+import { nodeRegistry } from "@/core/registry/NodeRegistry";
 
 /**
  * Hook for accessing node parameters with proper typing and default values

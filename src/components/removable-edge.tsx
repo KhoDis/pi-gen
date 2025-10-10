@@ -6,8 +6,8 @@
 
 import React from "react";
 import { EdgeProps } from "@xyflow/react";
-import { ButtonEdge } from "./button-edge";
-import { useGraphStore } from "../core/store/graphStore";
+import { ButtonEdge } from "@/components/button-edge";
+import { useGraphStore } from "@/core/store/graphStore";
 import { X } from "lucide-react";
 
 /**

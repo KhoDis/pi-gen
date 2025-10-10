@@ -1,10 +1,10 @@
 /**
  * Circle node evaluation and registration for the Pi-Gen project
  */
-import { Layer } from "../../core/models/Layer";
-import { createLayerValue } from "../../core/types/values";
-import { nodeRegistry } from "../../core/registry/NodeRegistry";
-import { EvaluationContext } from "../../core/types/evaluation";
+import { Layer } from "@/core/models";
+import { createLayerValue } from "@/core/types/values";
+import { nodeRegistry } from "@/core/registry/NodeRegistry";
+import { EvaluationContext } from "@/core/types/evaluation";
 
 /**
  * Circle node evaluator function

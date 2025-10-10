@@ -10,7 +10,6 @@ import {
   type NodeTypes,
   type Node,
   type Edge,
-  type NodeChange,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
@@ -151,6 +150,8 @@ export default function App() {
   const addNode = useGraphStore((state) => state.addNode);
   const addEdgeToStore = useGraphStore((state) => state.addEdge);
   const updateNodePosition = useGraphStore((state) => state.updateNodePosition);
+  const removeNodeFromStore = useGraphStore((state) => state.removeNode);
+  const removeEdgeFromStore = useGraphStore((state) => state.removeEdge);
 
   // History store for undo/redo
   useHistoryStore();
@@ -243,6 +244,20 @@ export default function App() {
     setHoveredEdgeId(null);
   }, []);
 
+  const onNodesDelete = useCallback(
+    (deleted: Node[]) => {
+      deleted.forEach((n) => removeNodeFromStore(n.id));
+    },
+    [removeNodeFromStore],
+  );
+
+  const onEdgesDelete = useCallback(
+    (deleted: Edge[]) => {
+      deleted.forEach((e) => removeEdgeFromStore(e.id));
+    },
+    [removeEdgeFromStore],
+  );
+
   // Update edges with hovered state
   useEffect(() => {
     setEdges((eds) =>
@@ -266,6 +281,8 @@ export default function App() {
         edges={edges}
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
+        onNodesDelete={onNodesDelete}
+        onEdgesDelete={onEdgesDelete}
         onConnect={onConnect}
         onEdgeMouseEnter={onEdgeMouseEnter}
         onEdgeMouseLeave={onEdgeMouseLeave}

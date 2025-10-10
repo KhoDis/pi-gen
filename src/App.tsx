@@ -27,6 +27,7 @@ import { NodeParams } from "./core/types/nodes";
 import { nodeRegistry } from "./core/registry/NodeRegistry";
 import AutoNodeComponent from "./components/AutoNodeComponent";
 import NodePalette from "./components/NodePalette";
+import GraphActions from "./components/GraphActions";
 
 // Define node types for ReactFlow
 // Build nodeTypes map from registry, falling back to AutoNodeComponent
@@ -294,6 +295,7 @@ export default function App() {
         <MiniMap />
         <Controls />
         <NodePalette />
+        <GraphActions />
       </ReactFlow>
     </div>
   );

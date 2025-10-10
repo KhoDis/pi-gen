@@ -10,6 +10,23 @@ import { RGBA } from "../models/Layer";
 import { Layer } from "../models/Layer";
 
 /**
+ * Standardized error structure for evaluation
+ */
+export interface EvaluationError {
+  message: string;
+  code?: string;
+  inputId?: string;
+  nodeId?: string;
+}
+
+/**
+ * Evaluation result that can be either successful or an error
+ */
+export type EvaluationResult<T = Record<string, Value>> =
+  | { success: true; outputs: T }
+  | { success: false; error: EvaluationError };
+
+/**
  * Evaluation context provided to node evaluators
  */
 export interface EvaluationContext {
@@ -31,7 +48,7 @@ export interface EvaluationContext {
    * @param id Input handle ID
    * @param expectedType Expected type of the input
    * @returns The input value with the correct type
-   * @throws Error if input type doesn't match expected type or if input is not available
+   * @throws EvaluationError if input type doesn't match expected type or if input is not available
    */
   getTypedInput<T>(id: string, expectedType: string): T;
 
@@ -39,7 +56,7 @@ export interface EvaluationContext {
    * Get a number input value
    * @param id Input handle ID
    * @returns The number value
-   * @throws Error if input is not a number or not available
+   * @throws EvaluationError if input is not a number or not available
    */
   getNumberInput(id: string): number;
 
@@ -47,7 +64,7 @@ export interface EvaluationContext {
    * Get a color input value
    * @param id Input handle ID
    * @returns The color value
-   * @throws Error if input is not a color or not available
+   * @throws EvaluationError if input is not a color or not available
    */
   getColorInput(id: string): RGBA;
 
@@ -55,7 +72,7 @@ export interface EvaluationContext {
    * Get a layer input value
    * @param id Input handle ID
    * @returns The layer value
-   * @throws Error if input is not a layer or not available
+   * @throws EvaluationError if input is not a layer or not available
    */
   getLayerInput(id: string): Layer;
 
@@ -63,7 +80,7 @@ export interface EvaluationContext {
    * Get a boolean input value
    * @param id Input handle ID
    * @returns The boolean value
-   * @throws Error if input is not a boolean or not available
+   * @throws EvaluationError if input is not a boolean or not available
    */
   getBooleanInput(id: string): boolean;
 
@@ -71,7 +88,7 @@ export interface EvaluationContext {
    * Get a string input value
    * @param id Input handle ID
    * @returns The string value
-   * @throws Error if input is not a string or not available
+   * @throws EvaluationError if input is not a string or not available
    */
   getStringInput(id: string): string;
 
@@ -79,7 +96,7 @@ export interface EvaluationContext {
    * Get a vector2 input value
    * @param id Input handle ID
    * @returns The vector2 value
-   * @throws Error if input is not a vector2 or not available
+   * @throws EvaluationError if input is not a vector2 or not available
    */
   getVector2Input(id: string): { x: number; y: number };
 
@@ -104,11 +121,8 @@ export interface EvaluationContext {
 }
 
 /**
- * Result of evaluating a node
- */
-export type EvaluationResult = Record<string, Value>;
-
-/**
  * Node evaluator function type
  */
-export type NodeEvaluator = (ctx: EvaluationContext) => EvaluationResult;
+export type NodeEvaluator<T = Record<string, Value>> = (
+  ctx: EvaluationContext,
+) => EvaluationResult<T>;

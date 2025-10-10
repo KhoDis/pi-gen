@@ -4,7 +4,11 @@
  * This file defines the type system for nodes, handles, and connections.
  */
 
-import { EvaluationContext, EvaluationResult } from "./evaluation";
+import {
+  EvaluationContext,
+  EvaluationResult,
+  NodeEvaluator,
+} from "./evaluation";
 
 /**
  * Unique identifier for nodes
@@ -126,7 +130,10 @@ export interface NodeType<P extends NodeParams = NodeParams> {
   /**
    * Evaluation function
    */
-  evaluate: (ctx: EvaluationContext) => EvaluationResult;
+  /**
+   * Evaluation function
+   */
+  evaluate: NodeEvaluator;
 }
 
 /**

@@ -6,7 +6,11 @@
 
 import { Node, Edge, NodeId, NodeParams } from "../types/nodes";
 import { Value } from "../types/values";
-import { EvaluationContext } from "../types/evaluation";
+import {
+  EvaluationContext,
+  EvaluationError,
+  EvaluationResult,
+} from "../types/evaluation";
 import { nodeRegistry } from "../registry/NodeRegistry";
 import { RGBA } from "../models/Layer";
 import { Layer } from "../models/Layer";
@@ -46,16 +50,23 @@ class EvaluationContextImpl implements EvaluationContext {
       }
 
       // If no default value is available, throw an error
-      throw new Error(
-        `Required input ${id} not connected for node ${this.nodeId}`,
-      );
+      const error: EvaluationError = {
+        message: `Required input ${id} not connected`,
+        nodeId: this.nodeId,
+        inputId: id,
+        code: "MISSING_INPUT",
+      };
+      throw error;
     }
 
     if (input.type !== expectedType) {
-      throw new Error(
-        `Type mismatch for input ${id} on node ${this.nodeId}: ` +
-          `expected ${expectedType}, got ${input.type}`,
-      );
+      const error: EvaluationError = {
+        message: `Type mismatch for input ${id}: expected ${expectedType}, got ${input.type}`,
+        nodeId: this.nodeId,
+        inputId: id,
+        code: "TYPE_MISMATCH",
+      };
+      throw error;
     }
 
     return input.value as T;
@@ -130,18 +141,38 @@ export class GraphEvaluator {
    * @param startNodeId ID of the node to start evaluation from
    * @returns Evaluation results for all nodes in the graph
    */
-  evaluateGraph(startNodeId: NodeId): Map<NodeId, Record<string, Value>> {
+  evaluateGraph(startNodeId: NodeId): EvaluationResult {
     this.clearCache();
 
-    // Sort nodes in topological order
-    const sortedNodes = this.sortNodesByDependency(startNodeId);
+    try {
+      // Sort nodes in topological order
+      const sortedNodes = this.sortNodesByDependency(startNodeId);
 
-    // Evaluate each node in order
-    for (const nodeId of sortedNodes) {
-      this.evaluateNode(nodeId);
+      // Evaluate each node in order
+      for (const nodeId of sortedNodes) {
+        const result = this.evaluateNode(nodeId);
+
+        // Stop evaluation if there's an error
+        if (!result.success) {
+          return result;
+        }
+      }
+
+      // Return success if all nodes evaluated successfully
+      return {
+        success: true,
+        outputs: this.cache.get(startNodeId) || {},
+      };
+    } catch (error) {
+      // Handle unexpected errors
+      return {
+        success: false,
+        error: {
+          message: `Graph evaluation failed: ${error instanceof Error ? error.message : String(error)}`,
+          code: "GRAPH_EVALUATION_FAILED",
+        },
+      };
     }
-
-    return this.cache;
   }
 
   /**
@@ -149,23 +180,37 @@ export class GraphEvaluator {
    * @param nodeId ID of the node to evaluate
    * @returns Evaluation result for the node
    */
-  evaluateNode(nodeId: NodeId): Record<string, Value> {
+  evaluateNode(nodeId: NodeId): EvaluationResult {
     // Return cached result if available
     if (this.cache.has(nodeId)) {
-      return this.cache.get(nodeId)!;
+      return { success: true, outputs: this.cache.get(nodeId)! };
     }
 
     try {
       // Find the node
       const node = this.nodes.find((n) => n.id === nodeId);
       if (!node) {
-        throw new Error(`Node not found: ${nodeId}`);
+        return {
+          success: false,
+          error: {
+            message: `Node not found: ${nodeId}`,
+            nodeId,
+            code: "NODE_NOT_FOUND",
+          },
+        };
       }
 
       // Get the node type
       const nodeType = nodeRegistry.get(node.type);
       if (!nodeType) {
-        throw new Error(`Unknown node type: ${node.type}`);
+        return {
+          success: false,
+          error: {
+            message: `Unknown node type: ${node.type}`,
+            nodeId,
+            code: "UNKNOWN_NODE_TYPE",
+          },
+        };
       }
 
       // Collect input values
@@ -177,15 +222,27 @@ export class GraphEvaluator {
       // Process each input port
       for (const edge of incomingEdges) {
         // Evaluate the source node
-        const sourceOutputs = this.evaluateNode(edge.source);
-        const outputValue = sourceOutputs[edge.sourceHandle];
+        const sourceResult = this.evaluateNode(edge.source);
+
+        if (!sourceResult.success) {
+          // Propagate error from source node
+          return sourceResult;
+        }
+
+        const outputValue = sourceResult.outputs[edge.sourceHandle];
 
         if (outputValue) {
           inputs[edge.targetHandle] = outputValue;
         } else {
-          throw new Error(
-            `Source node ${edge.source} does not provide output ${edge.sourceHandle}`,
-          );
+          return {
+            success: false,
+            error: {
+              message: `Source node ${edge.source} does not provide output ${edge.sourceHandle}`,
+              nodeId,
+              code: "MISSING_OUTPUT",
+              inputId: edge.targetHandle,
+            },
+          };
         }
       }
 
@@ -196,22 +253,49 @@ export class GraphEvaluator {
         node.data.params,
       );
 
-      // Evaluate the node
-      const outputs = nodeType.evaluate(context);
+      try {
+        // Evaluate the node
+        const result = nodeType.evaluate(context);
 
-      // Cache the result
-      this.cache.set(nodeId, outputs);
+        // If successful, cache the outputs
+        if (result.success) {
+          this.cache.set(nodeId, result.outputs);
+        }
 
-      return outputs;
-    } catch (error) {
-      // Enhance error with context
-      const enhancedError = new Error(
-        `Error evaluating node ${nodeId}: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      if (error instanceof Error && error.stack) {
-        enhancedError.stack = error.stack;
+        return result;
+      } catch (error) {
+        // Handle errors thrown during evaluation
+        if (error && typeof error === "object" && "message" in error) {
+          // It's already an EvaluationError
+          return {
+            success: false,
+            error: {
+              ...(error as EvaluationError),
+              nodeId: nodeId, // Ensure nodeId is set
+            },
+          };
+        } else {
+          // Convert generic error to EvaluationError
+          return {
+            success: false,
+            error: {
+              message: String(error),
+              nodeId,
+              code: "EVALUATION_ERROR",
+            },
+          };
+        }
       }
-      throw enhancedError;
+    } catch (error) {
+      // Handle unexpected errors
+      return {
+        success: false,
+        error: {
+          message: `Unexpected error: ${error instanceof Error ? error.message : String(error)}`,
+          nodeId,
+          code: "UNEXPECTED_ERROR",
+        },
+      };
     }
   }
 

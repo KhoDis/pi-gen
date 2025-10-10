@@ -8,7 +8,7 @@
 import React from "react";
 import { Position } from "@xyflow/react";
 import { cn } from "@/lib/utils";
-import { BaseHandle } from "@/components/base-handle";
+import { BaseHandle } from "@/components/base/BaseHandle";
 
 export interface NodeInputProps {
   /** ID for the input handle */

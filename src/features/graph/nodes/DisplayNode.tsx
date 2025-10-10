@@ -13,7 +13,7 @@ import { useGraphStore } from "@/core/store/graphStore";
 import { createGraphEvaluator } from "@/core/engine/GraphEvaluator";
 
 // Import specialized parameter components
-import { NodeInput } from "../ui/node-input";
+import { NodeInput } from "@/components/ui/node-input";
 
 // Import React Flow UI components
 import {
@@ -22,7 +22,7 @@ import {
   BaseNodeHeaderTitle,
   BaseNodeContent,
   BaseNodeFooter,
-} from "../base-node";
+} from "@/components/base/BaseNode";
 
 /**
  * Display node parameters

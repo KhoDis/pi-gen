@@ -7,7 +7,7 @@ import {
   BaseNodeFooter,
   BaseNodeHeader,
   BaseNodeHeaderTitle,
-} from "@/components/base-node";
+} from "@/components/base/BaseNode";
 import { NodeInput } from "@/components/ui/node-input";
 import { NodeOutput } from "@/components/ui/node-output";
 import { NumberParameter } from "@/components/ui/number-parameter";

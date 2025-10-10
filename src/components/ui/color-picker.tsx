@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { HexColorPicker, HexColorInput } from "react-colorful";
 import { Input } from "@/components/ui/input";
-import { RGBA } from "@/core/Layer.ts";
+import { RGBA } from "@/core/models/Layer";
 
 export function ColorPicker({
   value,

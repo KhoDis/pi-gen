@@ -117,7 +117,7 @@ export interface NodeType<P extends NodeParams = NodeParams> {
   /**
    * Component renderer function
    */
-  component: React.ComponentType<{
+  component?: React.ComponentType<{
     id: NodeId;
     data: NodeData<P>;
     selected: boolean;

@@ -95,12 +95,11 @@ nodeRegistry.register({
   label: "Number",
   category: "Values",
   description: "Provides a numeric value",
-  inputs: [],
+  inputs: [{ id: "value", label: "Value", type: "number", required: false }],
   outputs: [{ id: "number", label: "Number", type: "number", required: true }],
   defaultParams: {
     value: 10,
   },
-  component: NumberNodeComponent,
   evaluate: evaluateNumberNode,
 });
 

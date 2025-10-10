@@ -104,13 +104,12 @@ class NodeRegistry {
    */
   getComponentTypes(): Record<string, React.ComponentType<NodeComponentProps>> {
     const result: Record<string, React.ComponentType<NodeComponentProps>> = {};
-
     this.nodeTypes.forEach((nodeType, type) => {
-      // Type assertion is necessary here due to the generic constraints
-      result[type] =
-        nodeType.component as unknown as React.ComponentType<NodeComponentProps>;
+      if (nodeType.component) {
+        result[type] =
+          nodeType.component as unknown as React.ComponentType<NodeComponentProps>;
+      }
     });
-
     return result;
   }
 }

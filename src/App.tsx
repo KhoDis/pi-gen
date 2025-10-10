@@ -16,26 +16,29 @@ import "@xyflow/react/dist/style.css";
 import { edgeTypes } from "./edges";
 
 // Import node components
-import { CircleNode } from "./components/nodes/CircleNode";
-import { RectangleNode } from "./components/nodes/RectangleNode";
-import { ColorNode } from "./components/nodes/ColorNode";
-import { NumberNode } from "./components/nodes/NumberNode";
-import { DisplayNode } from "./components/nodes/DisplayNode";
+// Auto-register all nodes via glob side-effects
+import "./nodes/auto-register";
 
 // Import core types and stores
 import { RGBA } from "./core/models/Layer";
 import { useGraphStore } from "./core/store/graphStore";
 import { useHistoryStore } from "./core/store/historyStore";
 import { NodeParams } from "./core/types/nodes";
+import { nodeRegistry } from "./core/registry/NodeRegistry";
+import AutoNodeComponent from "./components/AutoNodeComponent";
 
 // Define node types for ReactFlow
-const nodeTypes: NodeTypes = {
-  circle: CircleNode,
-  rectangle: RectangleNode,
-  color: ColorNode,
-  number: NumberNode,
-  display: DisplayNode,
-};
+// Build nodeTypes map from registry, falling back to AutoNodeComponent
+const nodeTypes: NodeTypes = (() => {
+  const components = nodeRegistry.getComponentTypes();
+  // Collect all registered types
+  const all = nodeRegistry.getAll();
+  const map: Record<string, any> = {};
+  for (const entry of all) {
+    map[entry.type] = components[entry.type] ?? AutoNodeComponent;
+  }
+  return map as NodeTypes;
+})();
 
 // Create initial nodes for a more comprehensive example
 const initialNodes: Node[] = [

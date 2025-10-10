@@ -96,12 +96,11 @@ nodeRegistry.register({
   label: "Color",
   category: "Values",
   description: "Provides a color value",
-  inputs: [],
+  inputs: [{ id: "color", label: "Color", type: "color", required: false }],
   outputs: [{ id: "color", label: "Color", type: "color", required: true }],
   defaultParams: {
     color: { r: 255, g: 0, b: 0, a: 1 },
   },
-  component: ColorNodeComponent,
   evaluate: evaluateColorNode,
 });
 

@@ -157,7 +157,6 @@ nodeRegistry.register({
     height: 10,
     color: { r: 0, g: 128, b: 255, a: 1 },
   },
-  component: RectangleNodeComponent,
   evaluate: evaluateRectangleNode,
 });
 

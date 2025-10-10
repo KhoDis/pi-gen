@@ -144,7 +144,6 @@ nodeRegistry.register({
     radius: 10,
     color: { r: 255, g: 0, b: 0, a: 1 },
   },
-  component: CircleNodeComponent,
   evaluate: evaluateCircleNode,
 });
 

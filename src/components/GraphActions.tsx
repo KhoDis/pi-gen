@@ -6,7 +6,7 @@ const STORAGE_KEY = "pi-gen-graph";
 export const GraphActions: React.FC = () => {
   const nodes = useGraphStore((s) => s.nodes);
   const edges = useGraphStore((s) => s.edges);
-  const setState = useGraphStore.setState;
+  const setGraph = useGraphStore((s) => s.setGraph);
 
   const saveToLocal = () => {
     const data = JSON.stringify({ nodes, edges });
@@ -18,13 +18,8 @@ export const GraphActions: React.FC = () => {
     if (!raw) return;
     try {
       const parsed = JSON.parse(raw);
-      if (
-        parsed &&
-        Array.isArray(parsed.nodes) &&
-        Array.isArray(parsed.edges)
-      ) {
-        setState({ nodes: parsed.nodes, edges: parsed.edges });
-      }
+      if (parsed && Array.isArray(parsed.nodes) && Array.isArray(parsed.edges))
+        setGraph(parsed.nodes, parsed.edges);
     } catch {}
   };
 
@@ -53,9 +48,8 @@ export const GraphActions: React.FC = () => {
           parsed &&
           Array.isArray(parsed.nodes) &&
           Array.isArray(parsed.edges)
-        ) {
-          setState({ nodes: parsed.nodes, edges: parsed.edges });
-        }
+        )
+          setGraph(parsed.nodes, parsed.edges);
       } catch {}
     };
     input.click();

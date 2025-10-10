@@ -63,6 +63,9 @@ interface GraphState {
     id: NodeId,
   ) => Node<P> | undefined;
   getEdge: (id: string) => Edge | undefined;
+
+  // Bulk operations
+  setGraph: (nodes: Node[], edges: Edge[]) => void;
 }
 
 /**
@@ -238,5 +241,10 @@ export const useGraphStore = create<GraphState>((set, get) => ({
 
   getEdge: (id: string) => {
     return get().edges.find((edge) => edge.id === id);
+  },
+
+  // Bulk operations
+  setGraph: (nodes, edges) => {
+    set({ nodes, edges, selectedNodeIds: [] });
   },
 }));

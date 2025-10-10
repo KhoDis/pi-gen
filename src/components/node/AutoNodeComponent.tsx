@@ -2,6 +2,10 @@ import React, { useCallback, useMemo } from "react";
 import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import { useGraphStore } from "@/core/store/graphStore";
 import {
+  useHistoryStore,
+  createUpdateNodeParamsCommand,
+} from "@/core/store/historyStore";
+import {
   BaseNode,
   BaseNodeContent,
   BaseNodeFooter,
@@ -25,8 +29,8 @@ import type { RGBA } from "@/core/models";
 export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
   ({ id }) => {
     const getNode = useGraphStore((s) => s.getNode);
-    const updateNodeParams = useGraphStore((s) => s.updateNodeParams);
     const edges = useGraphStore((s) => s.edges);
+    const execute = useHistoryStore((s) => s.execute);
 
     const node = getNode(id);
 
@@ -46,9 +50,11 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
 
     const onParamChange = useCallback(
       (paramId: string, value: unknown) => {
-        updateNodeParams(id, { [paramId]: value });
+        // Use history command for undo/redo support
+        const command = createUpdateNodeParamsCommand(id, { [paramId]: value });
+        execute(command);
       },
-      [id, updateNodeParams],
+      [id, execute],
     );
 
     if (!node || !config) return null;

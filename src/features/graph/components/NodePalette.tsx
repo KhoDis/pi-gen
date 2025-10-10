@@ -15,7 +15,7 @@ export const NodePalette: React.FC = () => {
 
   const handleAdd = (type: string) => {
     const position = { x: 80 + (nextOffset % 4) * 40, y: 80 + nextOffset * 10 };
-    addNode(type, position, {} as any);
+    addNode(type, position, {} as Record<string, never>);
     setNextOffset((n) => n + 1);
   };
 

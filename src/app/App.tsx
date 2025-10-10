@@ -23,7 +23,6 @@ import "@/features/graph/nodes/auto-register";
 import { RGBA } from "@/core/models";
 import { useGraphStore } from "@/core/store/graphStore";
 import { useHistoryStore } from "@/core/store/historyStore";
-import { NodeParams } from "@/core/types/nodes";
 import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import AutoNodeComponent from "@/components/node/AutoNodeComponent";
 import NodePalette from "@/features/graph/components/NodePalette";
@@ -42,108 +41,62 @@ const nodeTypes: NodeTypes = (() => {
   return map as NodeTypes;
 })();
 
-// Create initial nodes for a more comprehensive example
-const initialNodes: Node[] = [
+// Initial graph setup - only used for first-time initialization
+const setupInitialGraph = (addNode: any, addEdgeToStore: any) => {
   // Color node
-  {
-    id: "color1",
-    type: "color",
-    position: { x: 100, y: 100 },
-    data: {
-      params: {
-        color: { r: 255, g: 0, b: 0, a: 1 } as RGBA,
-      },
+  const color1 = addNode(
+    "color",
+    { x: 100, y: 100 },
+    {
+      color: { r: 255, g: 0, b: 0, a: 1 } as RGBA,
     },
-  },
+  );
 
   // Number node for radius
-  {
-    id: "number1",
-    type: "number",
-    position: { x: 100, y: 250 },
-    data: {
-      params: {
-        value: 30,
-      },
+  const number1 = addNode(
+    "number",
+    { x: 100, y: 250 },
+    {
+      value: 30,
     },
-  },
+  );
 
   // Circle node
-  {
-    id: "circle1",
-    type: "circle",
-    position: { x: 400, y: 100 },
-    data: {
-      params: {
-        radius: 30,
-        color: { r: 255, g: 0, b: 0, a: 1 } as RGBA,
-      },
+  const circle1 = addNode(
+    "circle",
+    { x: 400, y: 100 },
+    {
+      radius: 30,
+      color: { r: 255, g: 0, b: 0, a: 1 } as RGBA,
     },
-  },
+  );
 
   // Rectangle node
-  {
-    id: "rectangle1",
-    type: "rectangle",
-    position: { x: 400, y: 300 },
-    data: {
-      params: {
-        width: 40,
-        height: 20,
-        color: { r: 0, g: 128, b: 255, a: 1 } as RGBA,
-      },
+  addNode(
+    "rectangle",
+    { x: 400, y: 300 },
+    {
+      width: 40,
+      height: 20,
+      color: { r: 0, g: 128, b: 255, a: 1 } as RGBA,
     },
-  },
+  );
 
   // Display node
-  {
-    id: "output1",
-    type: "display",
-    position: { x: 700, y: 200 },
-    data: {
-      params: {},
-    },
-  },
-];
+  const output1 = addNode("display", { x: 700, y: 200 }, {});
 
-// Initial edges connecting the nodes
-const initialEdges: Edge[] = [
-  // Connect color to circle
-  {
-    id: "edge1",
-    source: "color1",
-    sourceHandle: "color",
-    target: "circle1",
-    targetHandle: "color",
-    type: "removable",
-  },
-
-  // Connect number to circle radius
-  {
-    id: "edge2",
-    source: "number1",
-    sourceHandle: "number",
-    target: "circle1",
-    targetHandle: "radius",
-    type: "removable",
-  },
-
-  // Connect circle to display
-  {
-    id: "edge3",
-    source: "circle1",
-    sourceHandle: "layer",
-    target: "output1",
-    targetHandle: "layer",
-    type: "removable",
-  },
-];
+  // Connect nodes
+  addEdgeToStore(color1.id, "color", circle1.id, "color");
+  addEdgeToStore(number1.id, "number", circle1.id, "radius");
+  addEdgeToStore(circle1.id, "layer", output1.id, "layer");
+};
 
 export default function App() {
   // React Flow state
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   // Graph and history store state
   const graphNodes = useGraphStore((state) => state.nodes);
@@ -155,34 +108,76 @@ export default function App() {
   const removeEdgeFromStore = useGraphStore((state) => state.removeEdge);
 
   // History store for undo/redo
-  useHistoryStore();
+  const historyStore = useHistoryStore();
+  const undo = historyStore.undo;
+  const redo = historyStore.redo;
+  const canUndo = historyStore.canUndo;
+  const canRedo = historyStore.canRedo;
 
-  // Initialize graph store with initial nodes and edges
+  // Initialize graph store with initial nodes and edges (only once)
   useEffect(() => {
-    // Clear any existing nodes/edges
-    useGraphStore.setState({ nodes: [], edges: [] });
+    if (!initialized) {
+      // Clear any existing nodes/edges
+      useGraphStore.setState({ nodes: [], edges: [] });
 
-    // Add initial nodes to graph store
-    initialNodes.forEach((node) => {
-      if (node.type) {
-        addNode(
-          node.type,
-          node.position,
-          node.data.params as Partial<NodeParams>,
-        );
+      // Setup initial graph
+      setupInitialGraph(addNode, addEdgeToStore);
+
+      setInitialized(true);
+    }
+  }, [initialized, addNode, addEdgeToStore]);
+
+  // Keyboard shortcuts for undo/redo and delete
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Prevent shortcuts when typing in input fields
+      const target = event.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
       }
-    });
 
-    // Add initial edges to graph store
-    initialEdges.forEach((edge) => {
-      addEdgeToStore(
-        edge.source,
-        edge.sourceHandle || "",
-        edge.target,
-        edge.targetHandle || "",
-      );
-    });
-  }, [addNode, addEdgeToStore]);
+      // Undo: Ctrl+Z (Windows/Linux) or Cmd+Z (Mac)
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key === "z" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+        if (canUndo()) {
+          undo();
+        }
+      }
+
+      // Redo: Ctrl+Y or Ctrl+Shift+Z (Windows/Linux) or Cmd+Shift+Z (Mac)
+      if (
+        ((event.ctrlKey || event.metaKey) && event.key === "y") ||
+        ((event.ctrlKey || event.metaKey) &&
+          event.shiftKey &&
+          event.key === "z")
+      ) {
+        event.preventDefault();
+        if (canRedo()) {
+          redo();
+        }
+      }
+
+      // Delete: Delete or Backspace (for selected nodes)
+      if (event.key === "Delete" || event.key === "Backspace") {
+        const selectedNodes = nodes.filter((node) => node.selected);
+        if (selectedNodes.length > 0) {
+          event.preventDefault();
+          selectedNodes.forEach((node) => removeNodeFromStore(node.id));
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [undo, redo, canUndo, canRedo, nodes, removeNodeFromStore]);
 
   // Sync graph store nodes to React Flow nodes
   useEffect(() => {

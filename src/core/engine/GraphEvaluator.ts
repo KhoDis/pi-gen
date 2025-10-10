@@ -215,26 +215,42 @@ export class GraphEvaluator {
   }
 
   /**
-   * Sort nodes by dependency order
+   * Sort nodes by dependency order with cycle detection
    * @param startNodeId ID of the node to start from
    * @returns Array of node IDs in dependency order
+   * @throws Error if a cycle is detected in the graph
    */
   private sortNodesByDependency(startNodeId: NodeId): NodeId[] {
     const visited = new Set<NodeId>();
+    const visiting = new Set<NodeId>(); // Track nodes currently being visited
     const sorted: NodeId[] = [];
 
-    const visit = (nodeId: NodeId) => {
+    const visit = (nodeId: NodeId, path: NodeId[] = []) => {
       if (visited.has(nodeId)) return;
-      visited.add(nodeId);
+
+      // Cycle detection: if we encounter a node we're currently visiting, there's a cycle
+      if (visiting.has(nodeId)) {
+        const cycleStart = path.indexOf(nodeId);
+        const cycle = [...path.slice(cycleStart), nodeId];
+        throw new Error(
+          `Cycle detected in node graph: ${cycle.join(" -> ")}\n` +
+            `Please remove the circular dependency to continue.`,
+        );
+      }
+
+      visiting.add(nodeId);
+      const currentPath = [...path, nodeId];
 
       // Find all edges where this node is the target
       const incomingEdges = this.edges.filter((e) => e.target === nodeId);
 
       // Visit dependencies first
       for (const edge of incomingEdges) {
-        visit(edge.source);
+        visit(edge.source, currentPath);
       }
 
+      visiting.delete(nodeId);
+      visited.add(nodeId);
       sorted.push(nodeId);
     };
 

@@ -59,8 +59,6 @@ const initialNodes: Node[] = [
     data: {
       params: {
         value: 30,
-        min: 1,
-        max: 100,
       },
     },
   },

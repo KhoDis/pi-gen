@@ -6,7 +6,6 @@
  */
 
 import React from "react";
-import { Slider } from "./slider";
 import { Input } from "./input";
 import { NodeInput } from "./node-input";
 
@@ -19,12 +18,6 @@ export interface NumberParameterProps {
   value: number;
   /** Callback when value changes */
   onChange: (value: number) => void;
-  /** Minimum value (default: 0) */
-  min?: number;
-  /** Maximum value (default: 100) */
-  max?: number;
-  /** Step value (default: 1) */
-  step?: number;
   /** Whether to show the slider (default: true) */
   showSlider?: boolean;
   /** Whether to show the input field (default: true) */
@@ -44,35 +37,18 @@ export const NumberParameter: React.FC<NumberParameterProps> = ({
   label,
   value,
   onChange,
-  min = 0,
-  max = 100,
-  step = 1,
-  showSlider = true,
   showInput = true,
   className,
 }) => {
   return (
     <NodeInput id={id} label={label} className={className}>
-      <div className="flex items-center gap-2">
-        {showSlider && (
-          <Slider
-            min={min}
-            max={max}
-            step={step}
-            value={[value]}
-            onValueChange={(values) => onChange(values[0])}
-            className="flex-1"
-          />
-        )}
-
+      <div className="flex items-center gap-2 w-full">
         {showInput && (
           <Input
             type="number"
-            min={min}
-            max={max}
             value={value}
             onChange={(e) => onChange(Number(e.target.value))}
-            className="w-16 h-8"
+            className="w-full h-8"
           />
         )}
       </div>

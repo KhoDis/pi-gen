@@ -77,8 +77,6 @@ const CircleNodeComponent: React.FC<NodeComponentProps> = ({ id, data }) => {
           label="Radius"
           value={radius}
           onChange={handleRadiusChange}
-          min={1}
-          max={100}
         />
 
         <ColorParameter

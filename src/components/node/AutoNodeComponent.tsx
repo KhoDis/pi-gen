@@ -196,7 +196,7 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
     }, [id, nodes, edges]);
 
     return (
-      <BaseNode className="w-[260px]">
+      <BaseNode className="w-[260px]" data-render-key={Math.random()}>
         <BaseNodeHeader className="border-b">
           <BaseNodeHeaderTitle>{config.label}</BaseNodeHeaderTitle>
         </BaseNodeHeader>

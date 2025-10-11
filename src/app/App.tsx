@@ -33,6 +33,7 @@ import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import AutoNodeComponent from "@/components/node/AutoNodeComponent";
 import NodePalette from "@/features/graph/components/NodePalette";
 import GraphActions from "@/features/graph/components/GraphActions";
+import DevToolsPanel from "@/features/graph/components/DevToolsPanel";
 
 // Define node types for ReactFlow
 // Build nodeTypes map from registry, falling back to AutoNodeComponent
@@ -289,6 +290,7 @@ export default function App() {
         <Controls />
         <NodePalette />
         <GraphActions />
+        {import.meta.env.DEV && <DevToolsPanel />}
       </ReactFlow>
     </div>
   );

@@ -124,7 +124,7 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
   }, [layer]);
 
   return (
-    <BaseNode className="w-[250px]">
+    <BaseNode className="w-[250px]" data-render-key={Math.random()}>
       <BaseNodeHeader className="border-b">
         <BaseNodeHeaderTitle>Display</BaseNodeHeaderTitle>
       </BaseNodeHeader>

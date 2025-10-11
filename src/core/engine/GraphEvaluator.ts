@@ -9,6 +9,7 @@ import { Value } from "@/core/types/values";
 import { EvaluationContext } from "@/core/types/evaluation";
 import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import { RGBA, Layer } from "../models";
+import { useDebugStore } from "@/core/store/debugStore";
 
 /**
  * Result cache for node evaluation
@@ -117,6 +118,14 @@ export class GraphEvaluator {
   private nodes: Node[];
   private edges: Edge[];
   private cache: EvaluationCache = new Map();
+  private debugItems: {
+    nodeId: NodeId;
+    ms: number;
+    fromCache: boolean;
+    error?: string;
+  }[] = [];
+  private debugStartMs = 0;
+  private debugCacheHits = 0;
 
   /**
    * Create a new GraphEvaluator
@@ -126,6 +135,24 @@ export class GraphEvaluator {
   constructor(nodes: Node[], edges: Edge[]) {
     this.nodes = nodes;
     this.edges = edges;
+    if (import.meta.env.DEV) {
+      this.debugStartMs = performance.now();
+      this.debugItems = [];
+      this.debugCacheHits = 0;
+    }
+  }
+
+  private publishDebugSummary(): void {
+    if (!import.meta.env.DEV) return;
+    const totalMs = performance.now() - this.debugStartMs;
+    useDebugStore.getState().setSummary({
+      totalMs,
+      nodesEvaluated: this.debugItems.filter((i) => !i.fromCache && !i.error)
+        .length,
+      cacheHits: this.debugCacheHits,
+      items: this.debugItems.slice(),
+      timestamp: Date.now(),
+    });
   }
 
   /**
@@ -144,7 +171,9 @@ export class GraphEvaluator {
       this.evaluateNode(nodeId);
     }
 
-    return this.cache;
+    const result = this.cache;
+    this.publishDebugSummary();
+    return result;
   }
 
   /**
@@ -155,10 +184,16 @@ export class GraphEvaluator {
   evaluateNode(nodeId: NodeId): Record<string, Value> {
     // Return cached result if available
     if (this.cache.has(nodeId)) {
+      if (import.meta.env.DEV) {
+        this.debugCacheHits += 1;
+        this.debugItems.push({ nodeId, ms: 0, fromCache: true });
+        this.publishDebugSummary();
+      }
       return this.cache.get(nodeId)!;
     }
 
     try {
+      const start = import.meta.env.DEV ? performance.now() : 0;
       // Find the node
       const node = this.nodes.find((n) => n.id === nodeId);
       if (!node) {
@@ -204,7 +239,11 @@ export class GraphEvaluator {
 
       // Cache the result
       this.cache.set(nodeId, outputs);
-
+      if (import.meta.env.DEV) {
+        const ms = performance.now() - start;
+        this.debugItems.push({ nodeId, ms, fromCache: false });
+        this.publishDebugSummary();
+      }
       return outputs;
     } catch (error) {
       // Enhance error with context
@@ -213,6 +252,15 @@ export class GraphEvaluator {
       );
       if (error instanceof Error && error.stack) {
         enhancedError.stack = error.stack;
+      }
+      if (import.meta.env.DEV) {
+        this.debugItems.push({
+          nodeId,
+          ms: 0,
+          fromCache: false,
+          error: enhancedError.message,
+        });
+        this.publishDebugSummary();
       }
       throw enhancedError;
     }

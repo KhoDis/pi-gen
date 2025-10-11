@@ -34,7 +34,7 @@ function evaluateBlendNode(ctx: EvaluationContext) {
   const base = ctx.getLayerInput("base");
   const top = ctx.getLayerInput("top");
   const opacity = clamp01(ctx.getNumberInput("opacity"));
-  const modeRaw = ctx.getStringInput("mode");
+  const modeRaw = ctx.getOptionInput("mode");
   const mode: BlendMode = ((): BlendMode => {
     if (modeRaw === "multiply" || modeRaw === "screen") return modeRaw;
     return "normal";
@@ -76,7 +76,13 @@ nodeRegistry.register({
     { id: "base", label: "Base", type: "layer", required: true },
     { id: "top", label: "Top", type: "layer", required: true },
     { id: "opacity", label: "Opacity", type: "number", required: false },
-    { id: "mode", label: "Mode", type: "string", required: false },
+    {
+      id: "mode",
+      label: "Mode",
+      type: "option",
+      required: false,
+      options: ["normal", "multiply", "screen"],
+    },
   ],
   outputs: [{ id: "layer", label: "Layer", type: "layer", required: true }],
   defaultParams: {

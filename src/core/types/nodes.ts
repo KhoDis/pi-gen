@@ -73,6 +73,8 @@ export interface Port {
   label: string;
   type: string;
   required: boolean;
+  /** Optional list of allowed string options for type "option" */
+  options?: string[];
 }
 
 /**

@@ -80,6 +80,10 @@ class EvaluationContextImpl implements EvaluationContext {
     return this.getTypedInput<string>(id, "string");
   }
 
+  getOptionInput(id: string): string {
+    return this.getTypedInput<string>(id, "option");
+  }
+
   getVector2Input(id: string): { x: number; y: number } {
     return this.getTypedInput<{ x: number; y: number }>(id, "vector2");
   }

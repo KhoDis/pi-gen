@@ -80,7 +80,16 @@ export type ValueType =
   | LayerValue
   | BooleanValue
   | StringValue
-  | Vector2Value;
+  | Vector2Value
+  | OptionValue;
+
+/**
+ * Option value (enumerated string)
+ */
+export interface OptionValue extends Value {
+  readonly type: "option";
+  readonly value: string;
+}
 
 /**
  * Type guard for NumberValue
@@ -117,6 +126,12 @@ export const isStringValue = (value: Value): value is StringValue =>
  */
 export const isVector2Value = (value: Value): value is Vector2Value =>
   value.type === "vector2";
+
+/**
+ * Type guard for OptionValue
+ */
+export const isOptionValue = (value: Value): value is OptionValue =>
+  value.type === "option";
 
 /**
  * Create a number value
@@ -169,4 +184,12 @@ export const createStringValue = (value: string): StringValue => ({
 export const createVector2Value = (x: number, y: number): Vector2Value => ({
   type: "vector2",
   value: { x, y },
+});
+
+/**
+ * Create an option value
+ */
+export const createOptionValue = (value: string): OptionValue => ({
+  type: "option",
+  value,
 });

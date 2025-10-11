@@ -17,6 +17,13 @@ import { NodeOutput } from "@/components/ui/node-output";
 import { NumberParameter } from "@/components/ui/number-parameter";
 import { ColorParameter } from "@/components/ui/color-parameter";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import type { NodeComponentProps } from "@/core/registry/NodeRegistry";
 import type { RGBA } from "@/core/models";
 
@@ -69,7 +76,8 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
         type === "number" ||
         type === "color" ||
         type === "boolean" ||
-        type === "string"
+        type === "string" ||
+        type === "option"
       );
     };
 
@@ -121,6 +129,32 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
             value={(value as RGBA) ?? { r: 255, g: 0, b: 0, a: 1 }}
             onChange={(v) => onParamChange(paramId, v)}
           />
+        );
+      }
+
+      if (type === "option") {
+        const opts = (config.inputs.find((p) => p.id === paramId)?.options || [
+          "",
+        ]) as string[];
+        const current = String(value ?? opts[0] ?? "");
+        return (
+          <NodeInput key={paramId} id={paramId} label={label}>
+            <Select
+              value={current}
+              onValueChange={(v) => onParamChange(paramId, v)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {opts.map((o) => (
+                  <SelectItem key={o} value={o}>
+                    {o}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </NodeInput>
         );
       }
 

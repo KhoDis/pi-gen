@@ -75,6 +75,14 @@ export interface EvaluationContext {
   getStringInput(id: string): string;
 
   /**
+   * Get an option (enumerated string) input value
+   * @param id Input handle ID
+   * @returns The selected option string
+   * @throws Error if input is not an option or not available
+   */
+  getOptionInput(id: string): string;
+
+  /**
    * Get a vector2 input value
    * @param id Input handle ID
    * @returns The vector2 value

@@ -115,7 +115,7 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
 
       <BaseNodeContent>
         {/* Input Parameter with Canvas */}
-        <NodeInput id="layer" label="Layer Input">
+        <NodeInput id="layer" label="Layer Input" valueType="layer">
           <div className="border border-gray-300 dark:border-gray-700 rounded overflow-hidden mt-2">
             {layer ? (
               <canvas

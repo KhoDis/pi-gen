@@ -15,6 +15,8 @@ export interface NodeInputProps {
   id: string;
   /** Label for the input parameter */
   label: string;
+  /** Optional value type variant for visual handle styling */
+  valueType?: string;
   /** Content to render in the input parameter */
   children: React.ReactNode;
   /** Additional className for the container */
@@ -31,6 +33,7 @@ export interface NodeInputProps {
 export const NodeInput: React.FC<NodeInputProps> = ({
   id,
   label,
+  valueType,
   children,
   className,
 }) => {
@@ -39,7 +42,12 @@ export const NodeInput: React.FC<NodeInputProps> = ({
       <div className="flex items-center w-full">
         {/* Input handle - always on the left */}
         <div className="w-4 flex justify-start items-center relative">
-          <BaseHandle id={id} type="target" position={Position.Left} />
+          <BaseHandle
+            id={id}
+            type="target"
+            position={Position.Left}
+            variant={valueType}
+          />
         </div>
 
         {/* Content area */}

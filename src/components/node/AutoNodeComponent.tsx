@@ -92,7 +92,7 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
       if (!isEditableType(type)) {
         // Non-editable types: only show the input slot/label
         return (
-          <NodeInput key={paramId} id={paramId} label={label}>
+          <NodeInput key={paramId} id={paramId} label={label} valueType={type}>
             <div className="text-xs text-muted-foreground">
               Connect an input
             </div>
@@ -102,7 +102,7 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
 
       if (isConnected) {
         return (
-          <NodeInput key={paramId} id={paramId} label={label}>
+          <NodeInput key={paramId} id={paramId} label={label} valueType={type}>
             <div className="text-xs text-muted-foreground">Connected</div>
           </NodeInput>
         );
@@ -196,7 +196,12 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
 
         <BaseNodeFooter>
           {config.outputs.map((outp) => (
-            <NodeOutput key={outp.id} id={outp.id} label={outp.label} />
+            <NodeOutput
+              key={outp.id}
+              id={outp.id}
+              label={outp.label}
+              valueType={outp.type}
+            />
           ))}
         </BaseNodeFooter>
       </BaseNode>

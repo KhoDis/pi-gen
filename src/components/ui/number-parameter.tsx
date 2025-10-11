@@ -41,7 +41,7 @@ export const NumberParameter: React.FC<NumberParameterProps> = ({
   className,
 }) => {
   return (
-    <NodeInput id={id} label={label} className={className}>
+    <NodeInput id={id} label={label} valueType="number" className={className}>
       <div className="flex items-center gap-2 w-full">
         {showInput && (
           <Input

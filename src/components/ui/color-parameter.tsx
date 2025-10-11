@@ -37,7 +37,7 @@ export const ColorParameter: React.FC<ColorParameterProps> = ({
   className,
 }) => {
   return (
-    <NodeInput id={id} label={label} className={className}>
+    <NodeInput id={id} label={label} valueType="color" className={className}>
       <ColorPicker value={value} onChange={onChange} />
     </NodeInput>
   );

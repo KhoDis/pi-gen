@@ -15,6 +15,8 @@ export interface NodeOutputProps {
   id: string;
   /** Label for the output parameter */
   label: string;
+  /** Optional value type variant for visual handle styling */
+  valueType?: string;
   /** Additional className for the container */
   className?: string;
 }
@@ -29,6 +31,7 @@ export interface NodeOutputProps {
 export const NodeOutput: React.FC<NodeOutputProps> = ({
   id,
   label,
+  valueType,
   className,
 }) => {
   return (
@@ -40,7 +43,12 @@ export const NodeOutput: React.FC<NodeOutputProps> = ({
 
       {/* Output handle - always on the right */}
       <div className="w-4 flex justify-end items-center relative">
-        <BaseHandle id={id} type="source" position={Position.Right} />
+        <BaseHandle
+          id={id}
+          type="source"
+          position={Position.Right}
+          variant={valueType}
+        />
       </div>
     </div>
   );

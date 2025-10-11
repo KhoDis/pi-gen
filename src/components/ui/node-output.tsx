@@ -9,6 +9,8 @@ import React from "react";
 import { Position } from "@xyflow/react";
 import { cn } from "@/lib/utils";
 import { BaseHandle } from "@/components/base/BaseHandle";
+import { useGraphStore } from "@/core/store/graphStore";
+import { arePortsCompatible } from "@/core/registry/connection";
 
 export interface NodeOutputProps {
   /** ID for the output handle */
@@ -34,6 +36,7 @@ export const NodeOutput: React.FC<NodeOutputProps> = ({
   valueType,
   className,
 }) => {
+  const nodes = useGraphStore((s) => s.nodes);
   return (
     <div className={cn("flex items-center w-full py-1", className)}>
       {/* Label - aligned to the right */}
@@ -48,6 +51,15 @@ export const NodeOutput: React.FC<NodeOutputProps> = ({
           type="source"
           position={Position.Right}
           variant={valueType}
+          isValidConnection={(conn) =>
+            arePortsCompatible(
+              nodes,
+              conn.source ?? "",
+              conn.sourceHandle ?? "",
+              conn.target ?? "",
+              conn.targetHandle ?? "",
+            )
+          }
         />
       </div>
     </div>

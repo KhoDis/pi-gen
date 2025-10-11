@@ -9,6 +9,8 @@ import React from "react";
 import { Position } from "@xyflow/react";
 import { cn } from "@/lib/utils";
 import { BaseHandle } from "@/components/base/BaseHandle";
+import { useGraphStore } from "@/core/store/graphStore";
+import { arePortsCompatible } from "@/core/registry/connection";
 
 export interface NodeInputProps {
   /** ID for the input handle */
@@ -37,6 +39,7 @@ export const NodeInput: React.FC<NodeInputProps> = ({
   children,
   className,
 }) => {
+  const nodes = useGraphStore((s) => s.nodes);
   return (
     <div className={cn("flex flex-col w-full py-1 pr-4", className)}>
       <div className="flex items-center w-full">
@@ -47,6 +50,15 @@ export const NodeInput: React.FC<NodeInputProps> = ({
             type="target"
             position={Position.Left}
             variant={valueType}
+            isValidConnection={(conn) =>
+              arePortsCompatible(
+                nodes,
+                conn.source ?? "",
+                conn.sourceHandle ?? "",
+                conn.target ?? "",
+                conn.targetHandle ?? "",
+              )
+            }
           />
         </div>
 

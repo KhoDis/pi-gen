@@ -16,6 +16,7 @@ import {
   HandleType,
 } from "@/core/types/nodes";
 import { nodeRegistry } from "@/core/registry/NodeRegistry";
+import { arePortsCompatible } from "@/core/registry/connection";
 
 /**
  * Interface for the graph state
@@ -173,6 +174,18 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     if (existingTargetConnection) {
       // Remove the existing connection to the target handle
       get().removeEdge(existingTargetConnection.id);
+    }
+
+    // Enforce compatible types
+    const compatible = arePortsCompatible(
+      get().nodes,
+      source,
+      sourceHandle,
+      target,
+      targetHandle,
+    );
+    if (!compatible) {
+      return null;
     }
 
     // Create the new edge

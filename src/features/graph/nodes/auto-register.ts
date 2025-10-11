@@ -5,5 +5,11 @@
 // Vite's import.meta.glob with eager: true will include them in the bundle.
 const modules = import.meta.glob("./*.tsx", { eager: true });
 
+// Conditionally import dev-only nodes
+if (import.meta.env.DEV) {
+  const devModules = import.meta.glob("./dev/*.tsx", { eager: true });
+  void devModules;
+}
+
 // The imported modules are intentionally unused; side effects are what we need.
 void modules;

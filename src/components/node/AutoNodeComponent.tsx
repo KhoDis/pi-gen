@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import type { NodeComponentProps } from "@/core/registry/NodeRegistry";
 import type { RGBA } from "@/core/models";
+import { createGraphEvaluator } from "@/core/engine/GraphEvaluator";
 
 /**
  * AutoNodeComponent renders a node UI automatically from its registry config.
@@ -37,6 +38,7 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
   ({ id }) => {
     const getNode = useGraphStore((s) => s.getNode);
     const edges = useGraphStore((s) => s.edges);
+    const nodes = useGraphStore((s) => s.nodes);
     const execute = useHistoryStore((s) => s.execute);
 
     const node = getNode(id);
@@ -182,6 +184,17 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
       );
     };
 
+    // Inline evaluation error for this node
+    const evaluationError = useMemo(() => {
+      try {
+        const evaluator = createGraphEvaluator(nodes, edges);
+        evaluator.evaluateNode(id);
+        return undefined;
+      } catch (err) {
+        return err instanceof Error ? err.message : String(err);
+      }
+    }, [id, nodes, edges]);
+
     return (
       <BaseNode className="w-[260px]">
         <BaseNodeHeader className="border-b">
@@ -189,6 +202,11 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
         </BaseNodeHeader>
 
         <BaseNodeContent>
+          {evaluationError && (
+            <div className="mb-2 rounded border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+              {evaluationError}
+            </div>
+          )}
           {config.inputs.map((inp) =>
             renderParamControl(inp.id, inp.label, inp.type, params[inp.id]),
           )}

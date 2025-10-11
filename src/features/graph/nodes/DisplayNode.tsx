@@ -79,6 +79,22 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
     }
   }, [id, sourceNode, inputEdge, graphStore.nodes, graphStore.edges]);
 
+  const errorText = useMemo(() => {
+    try {
+      // If layer computed fine, no error
+      if (layer) return undefined;
+      // Re-run to capture error message explicitly
+      const evaluator = createGraphEvaluator(
+        graphStore.nodes,
+        graphStore.edges,
+      );
+      evaluator.evaluateNode(id);
+      return undefined;
+    } catch (err) {
+      return err instanceof Error ? err.message : String(err);
+    }
+  }, [id, layer, graphStore.nodes, graphStore.edges]);
+
   // Render the layer to the canvas when it changes
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -114,6 +130,11 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
       </BaseNodeHeader>
 
       <BaseNodeContent>
+        {errorText && (
+          <div className="mb-2 rounded border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+            {errorText}
+          </div>
+        )}
         {/* Input Parameter with Canvas */}
         <NodeInput id="layer" label="Layer Input" valueType="layer">
           <div className="border border-gray-300 dark:border-gray-700 rounded overflow-hidden mt-2">

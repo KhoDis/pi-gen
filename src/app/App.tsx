@@ -22,7 +22,13 @@ import "@/features/graph/nodes/auto-register";
 // Import core types and stores
 import { RGBA } from "@/core/models";
 import { useGraphStore } from "@/core/store/graphStore";
-import { useHistoryStore } from "@/core/store/historyStore";
+import {
+  useHistoryStore,
+  createAddEdgeCommand,
+  createRemoveEdgeCommand,
+  createRemoveNodeCommand,
+  createUpdateNodePositionCommand,
+} from "@/core/store/historyStore";
 import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import AutoNodeComponent from "@/components/node/AutoNodeComponent";
 import NodePalette from "@/features/graph/components/NodePalette";
@@ -103,9 +109,7 @@ export default function App() {
   const graphEdges = useGraphStore((state) => state.edges);
   const addNode = useGraphStore((state) => state.addNode);
   const addEdgeToStore = useGraphStore((state) => state.addEdge);
-  const updateNodePosition = useGraphStore((state) => state.updateNodePosition);
-  const removeNodeFromStore = useGraphStore((state) => state.removeNode);
-  const removeEdgeFromStore = useGraphStore((state) => state.removeEdge);
+  const execute = useHistoryStore((s) => s.execute);
 
   // History store for undo/redo
   const historyStore = useHistoryStore();
@@ -170,14 +174,16 @@ export default function App() {
         const selectedNodes = nodes.filter((node) => node.selected);
         if (selectedNodes.length > 0) {
           event.preventDefault();
-          selectedNodes.forEach((node) => removeNodeFromStore(node.id));
+          selectedNodes.forEach((node) =>
+            execute(createRemoveNodeCommand(node.id)),
+          );
         }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo, canUndo, canRedo, nodes, removeNodeFromStore]);
+  }, [undo, redo, canUndo, canRedo, nodes, execute]);
 
   // Sync graph store nodes to React Flow nodes
   useEffect(() => {
@@ -203,32 +209,24 @@ export default function App() {
   const onConnect: OnConnect = useCallback(
     (connection) => {
       if (connection.source && connection.target) {
-        // Create edge with removable type
-        const edge = addEdgeToStore(
-          connection.source,
-          connection.sourceHandle || "",
-          connection.target,
-          connection.targetHandle || "",
+        execute(
+          createAddEdgeCommand(
+            connection.source,
+            connection.sourceHandle || "",
+            connection.target,
+            connection.targetHandle || "",
+          ),
         );
-
-        // Update the edge type if it was created
-        if (edge) {
-          setEdges((eds) =>
-            eds.map((e) =>
-              e.id === edge.id ? { ...e, type: "removable" } : e,
-            ),
-          );
-        }
       }
     },
-    [addEdgeToStore, setEdges],
+    [execute],
   );
 
   const onNodeDragStop = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      updateNodePosition(node.id, node.position);
+      execute(createUpdateNodePositionCommand(node.id, node.position));
     },
-    [updateNodePosition],
+    [execute],
   );
 
   // Handle edge hover events
@@ -242,16 +240,16 @@ export default function App() {
 
   const onNodesDelete = useCallback(
     (deleted: Node[]) => {
-      deleted.forEach((n) => removeNodeFromStore(n.id));
+      deleted.forEach((n) => execute(createRemoveNodeCommand(n.id)));
     },
-    [removeNodeFromStore],
+    [execute],
   );
 
   const onEdgesDelete = useCallback(
     (deleted: Edge[]) => {
-      deleted.forEach((e) => removeEdgeFromStore(e.id));
+      deleted.forEach((e) => execute(createRemoveEdgeCommand(e.id)));
     },
-    [removeEdgeFromStore],
+    [execute],
   );
 
   // Update edges with hovered state

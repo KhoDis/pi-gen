@@ -1,13 +1,16 @@
 import React, { useMemo, useState } from "react";
 import { nodeRegistry } from "@/core/registry/NodeRegistry";
-import { useGraphStore } from "@/core/store/graphStore";
+import {
+  useHistoryStore,
+  createAddNodeCommand,
+} from "@/core/store/historyStore";
 
 /**
  * Simple registry-driven node palette.
  * - Click a node type to add it to the canvas at an offset position.
  */
 export const NodePalette: React.FC = () => {
-  const addNode = useGraphStore((s) => s.addNode);
+  const execute = useHistoryStore((s) => s.execute);
   const [isOpen, setIsOpen] = useState(true);
   const [nextOffset, setNextOffset] = useState(0);
 
@@ -15,7 +18,7 @@ export const NodePalette: React.FC = () => {
 
   const handleAdd = (type: string) => {
     const position = { x: 80 + (nextOffset % 4) * 40, y: 80 + nextOffset * 10 };
-    addNode(type, position, {} as Record<string, never>);
+    execute(createAddNodeCommand(type, position, {} as Record<string, never>));
     setNextOffset((n) => n + 1);
   };
 

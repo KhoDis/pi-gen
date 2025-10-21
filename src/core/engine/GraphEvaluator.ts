@@ -115,9 +115,11 @@ class EvaluationContextImpl implements EvaluationContext {
  * GraphEvaluator class for evaluating node graphs
  */
 export class GraphEvaluator {
-  private nodes: Node[];
-  private edges: Edge[];
   private cache: EvaluationCache = new Map();
+  // Precomputed structures for O(1) lookups
+  private nodesById: Map<NodeId, Node> = new Map();
+  private incomingEdgesByTarget: Map<NodeId, Edge[]> = new Map();
+  private outgoingEdgesBySource: Map<NodeId, Edge[]> = new Map();
   private debugItems: {
     nodeId: NodeId;
     ms: number;
@@ -126,6 +128,8 @@ export class GraphEvaluator {
   }[] = [];
   private debugStartMs = 0;
   private debugCacheHits = 0;
+  // Tracks recursion depth to batch debug publishing
+  private evaluationDepth = 0;
 
   /**
    * Create a new GraphEvaluator
@@ -133,8 +137,20 @@ export class GraphEvaluator {
    * @param edges Array of edges in the graph
    */
   constructor(nodes: Node[], edges: Edge[]) {
-    this.nodes = nodes;
-    this.edges = edges;
+    // Build fast lookup maps
+    this.nodesById = new Map(nodes.map((n) => [n.id, n]));
+    this.incomingEdgesByTarget = new Map();
+    this.outgoingEdgesBySource = new Map();
+    for (const edge of edges) {
+      if (!this.incomingEdgesByTarget.has(edge.target)) {
+        this.incomingEdgesByTarget.set(edge.target, []);
+      }
+      this.incomingEdgesByTarget.get(edge.target)!.push(edge);
+      if (!this.outgoingEdgesBySource.has(edge.source)) {
+        this.outgoingEdgesBySource.set(edge.source, []);
+      }
+      this.outgoingEdgesBySource.get(edge.source)!.push(edge);
+    }
     if (import.meta.env.DEV) {
       this.debugStartMs = performance.now();
       this.debugItems = [];
@@ -162,6 +178,12 @@ export class GraphEvaluator {
    */
   evaluateGraph(startNodeId: NodeId): Map<NodeId, Record<string, Value>> {
     this.clearCache();
+    if (import.meta.env.DEV) {
+      // Reset debug metrics for this run
+      this.debugStartMs = performance.now();
+      this.debugItems = [];
+      this.debugCacheHits = 0;
+    }
 
     // Sort nodes in topological order
     const sortedNodes = this.sortNodesByDependency(startNodeId);
@@ -182,20 +204,26 @@ export class GraphEvaluator {
    * @returns Evaluation result for the node
    */
   evaluateNode(nodeId: NodeId): Record<string, Value> {
+    this.evaluationDepth += 1;
     // Return cached result if available
     if (this.cache.has(nodeId)) {
       if (import.meta.env.DEV) {
         this.debugCacheHits += 1;
         this.debugItems.push({ nodeId, ms: 0, fromCache: true });
+      }
+      const cached = this.cache.get(nodeId)!;
+      this.evaluationDepth -= 1;
+      // Only publish once at the top level
+      if (import.meta.env.DEV && this.evaluationDepth === 0) {
         this.publishDebugSummary();
       }
-      return this.cache.get(nodeId)!;
+      return cached;
     }
 
     try {
       const start = import.meta.env.DEV ? performance.now() : 0;
       // Find the node
-      const node = this.nodes.find((n) => n.id === nodeId);
+      const node = this.nodesById.get(nodeId);
       if (!node) {
         throw new Error(`Node not found: ${nodeId}`);
       }
@@ -210,7 +238,7 @@ export class GraphEvaluator {
       const inputs: Record<string, Value> = {};
 
       // Find all edges targeting this node
-      const incomingEdges = this.edges.filter((e) => e.target === nodeId);
+      const incomingEdges = this.incomingEdgesByTarget.get(nodeId) || [];
 
       // Process each input port
       for (const edge of incomingEdges) {
@@ -218,7 +246,7 @@ export class GraphEvaluator {
         const sourceOutputs = this.evaluateNode(edge.source);
         const outputValue = sourceOutputs[edge.sourceHandle];
 
-        if (outputValue) {
+        if (outputValue !== undefined) {
           inputs[edge.targetHandle] = outputValue;
         } else {
           throw new Error(
@@ -242,7 +270,6 @@ export class GraphEvaluator {
       if (import.meta.env.DEV) {
         const ms = performance.now() - start;
         this.debugItems.push({ nodeId, ms, fromCache: false });
-        this.publishDebugSummary();
       }
       return outputs;
     } catch (error) {
@@ -260,9 +287,13 @@ export class GraphEvaluator {
           fromCache: false,
           error: enhancedError.message,
         });
-        this.publishDebugSummary();
       }
       throw enhancedError;
+    } finally {
+      this.evaluationDepth -= 1;
+      if (import.meta.env.DEV && this.evaluationDepth === 0) {
+        this.publishDebugSummary();
+      }
     }
   }
 
@@ -293,8 +324,8 @@ export class GraphEvaluator {
       visiting.add(nodeId);
       const currentPath = [...path, nodeId];
 
-      // Find all edges where this node is the target
-      const incomingEdges = this.edges.filter((e) => e.target === nodeId);
+      // Find all edges where this node is the target (O(1) via map)
+      const incomingEdges = this.incomingEdgesByTarget.get(nodeId) || [];
 
       // Visit dependencies first
       for (const edge of incomingEdges) {
@@ -328,7 +359,7 @@ export class GraphEvaluator {
     this.cache.delete(nodeId);
 
     // Find all edges where this node is the source
-    const outgoingEdges = this.edges.filter((e) => e.source === nodeId);
+    const outgoingEdges = this.outgoingEdgesBySource.get(nodeId) || [];
 
     // Mark dependent nodes as dirty
     for (const edge of outgoingEdges) {

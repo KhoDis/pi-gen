@@ -5,6 +5,7 @@
  */
 
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 import { useGraphStore } from "@/core/store/graphStore";
 import { Node, Edge, NodeId, Position, NodeParams } from "@/core/types/nodes";
 
@@ -40,58 +41,63 @@ interface HistoryState {
 /**
  * Create the history store
  */
-export const useHistoryStore = create<HistoryState>((set, get) => ({
-  // Initial state
-  past: [],
-  future: [],
-
-  // Operations
-  execute: (command) => {
-    command.execute();
-    set((state) => ({
-      past: [...state.past, command],
+export const useHistoryStore = create<HistoryState>()(
+  devtools(
+    (set, get) => ({
+      // Initial state
+      past: [],
       future: [],
-    }));
-  },
 
-  undo: () => {
-    const { past } = get();
-    if (past.length === 0) return;
+      // Operations
+      execute: (command) => {
+        command.execute();
+        set((state) => ({
+          past: [...state.past, command],
+          future: [],
+        }));
+      },
 
-    const command = past[past.length - 1];
-    command.undo();
+      undo: () => {
+        const { past } = get();
+        if (past.length === 0) return;
 
-    set((state) => ({
-      past: state.past.slice(0, -1),
-      future: [command, ...state.future],
-    }));
-  },
+        const command = past[past.length - 1];
+        command.undo();
 
-  redo: () => {
-    const { future } = get();
-    if (future.length === 0) return;
+        set((state) => ({
+          past: state.past.slice(0, -1),
+          future: [command, ...state.future],
+        }));
+      },
 
-    const command = future[0];
-    command.execute();
+      redo: () => {
+        const { future } = get();
+        if (future.length === 0) return;
 
-    set((state) => ({
-      past: [...state.past, command],
-      future: state.future.slice(1),
-    }));
-  },
+        const command = future[0];
+        command.execute();
 
-  clear: () => {
-    set({ past: [], future: [] });
-  },
+        set((state) => ({
+          past: [...state.past, command],
+          future: state.future.slice(1),
+        }));
+      },
 
-  // Utility
-  canUndo: () => get().past.length > 0,
-  canRedo: () => get().future.length > 0,
-  getLastCommand: () => {
-    const { past } = get();
-    return past.length > 0 ? past[past.length - 1] : undefined;
-  },
-}));
+      clear: () => {
+        set({ past: [], future: [] });
+      },
+
+      // Utility
+      canUndo: () => get().past.length > 0,
+      canRedo: () => get().future.length > 0,
+      getLastCommand: () => {
+        const { past } = get();
+        return past.length > 0 ? past[past.length - 1] : undefined;
+      },
+    }),
+    { name: "historyStore" },
+  ),
+);
 
 /**
  * Command factory functions

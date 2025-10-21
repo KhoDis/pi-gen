@@ -10,7 +10,7 @@ import { EvaluationContext } from "@/core/types/evaluation";
  */
 function evaluateColorNode(ctx: EvaluationContext) {
   // Get the color parameter
-  const color = ctx.getColorInput("color");
+  const color = ctx.getColor("color");
 
   // Return the color as output
   return {

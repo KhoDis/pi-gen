@@ -7,11 +7,11 @@ import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import { EvaluationContext } from "@/core/types/evaluation";
 
 function evaluateGridNode(ctx: EvaluationContext) {
-  const width = Math.max(1, ctx.getNumberInput("width"));
-  const height = Math.max(1, ctx.getNumberInput("height"));
-  const cell = Math.max(1, ctx.getNumberInput("cell"));
-  const colorA = ctx.getColorInput("colorA");
-  const colorB = ctx.getColorInput("colorB");
+  const width = Math.max(1, ctx.getNumber("width"));
+  const height = Math.max(1, ctx.getNumber("height"));
+  const cell = Math.max(1, ctx.getNumber("cell"));
+  const colorA = ctx.getColor("colorA");
+  const colorB = ctx.getColor("colorB");
 
   const out = new Layer(width, height);
 

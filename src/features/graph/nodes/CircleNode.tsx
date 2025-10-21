@@ -12,8 +12,8 @@ import { EvaluationContext } from "@/core/types/evaluation";
 function evaluateCircleNode(ctx: EvaluationContext) {
   // Get values directly from context with type safety
   // These will throw appropriate errors if inputs are missing or of wrong type
-  const radius = ctx.getNumberInput("radius");
-  const color = ctx.getColorInput("color");
+  const radius = ctx.getNumber("radius");
+  const color = ctx.getColor("color");
 
   // Create a layer with the circle
   const size = radius * 2;

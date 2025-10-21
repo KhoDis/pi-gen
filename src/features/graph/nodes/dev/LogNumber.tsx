@@ -2,7 +2,7 @@ import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import { EvaluationContext } from "@/core/types/evaluation";
 
 function evaluate(ctx: EvaluationContext) {
-  const value = ctx.getNumberInput("value");
+  const value = ctx.getNumber("value");
   // eslint-disable-next-line no-console
   console.debug(`[Dev:LogNumber] ${ctx.nodeId} value=`, value);
   return {};

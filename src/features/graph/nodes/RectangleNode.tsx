@@ -12,9 +12,9 @@ import { EvaluationContext } from "@/core/types/evaluation";
 function evaluateRectangleNode(ctx: EvaluationContext) {
   // Get values directly from context with type safety
   // These will throw appropriate errors if inputs are missing or of wrong type
-  const width = ctx.getNumberInput("width");
-  const height = ctx.getNumberInput("height");
-  const color = ctx.getColorInput("color");
+  const width = ctx.getNumber("width");
+  const height = ctx.getNumber("height");
+  const color = ctx.getColor("color");
 
   // Create a layer with the rectangle
   const layer = new Layer(width, height);

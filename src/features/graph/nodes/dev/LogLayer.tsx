@@ -2,7 +2,7 @@ import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import { EvaluationContext } from "@/core/types/evaluation";
 
 function evaluate(ctx: EvaluationContext) {
-  const layer = ctx.getLayerInput("layer");
+  const layer = ctx.getLayer("layer");
   // eslint-disable-next-line no-console
   console.debug(`[Dev:LogLayer] ${ctx.nodeId} size=`, {
     width: layer.width,

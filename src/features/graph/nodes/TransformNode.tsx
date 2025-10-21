@@ -7,9 +7,9 @@ import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import { EvaluationContext } from "@/core/types/evaluation";
 
 function evaluateTransformNode(ctx: EvaluationContext) {
-  const input = ctx.getLayerInput("layer");
-  const dx = ctx.getNumberInput("dx");
-  const dy = ctx.getNumberInput("dy");
+  const input = ctx.getLayer("layer");
+  const dx = ctx.getNumber("dx");
+  const dy = ctx.getNumber("dy");
 
   const out = new Layer(input.width, input.height);
 

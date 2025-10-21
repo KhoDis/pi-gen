@@ -10,7 +10,7 @@ import { EvaluationContext } from "@/core/types/evaluation";
  */
 function evaluateNumberNode(ctx: EvaluationContext) {
   // Get the number parameter
-  const value = ctx.getNumberInput("value");
+  const value = ctx.getNumber("value");
 
   // Return the number as output
   return {

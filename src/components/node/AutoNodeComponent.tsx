@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import type { NodeComponentProps } from "@/core/registry/NodeRegistry";
 import type { RGBA } from "@/core/models";
-import { createGraphEvaluator } from "@/core/engine/GraphEvaluator";
+import { createGraphEngine } from "@/core/engine/GraphEngine";
 
 /**
  * AutoNodeComponent renders a node UI automatically from its registry config.
@@ -187,8 +187,8 @@ export const AutoNodeComponent: React.FC<NodeComponentProps> = React.memo(
     // Inline evaluation error for this node
     const evaluationError = useMemo(() => {
       try {
-        const evaluator = createGraphEvaluator(nodes, edges);
-        evaluator.evaluateNode(id);
+        const engine = createGraphEngine(nodes, edges);
+        engine.evaluateNode(id);
         return undefined;
       } catch (err) {
         return err instanceof Error ? err.message : String(err);

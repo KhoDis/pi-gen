@@ -20,11 +20,11 @@ function mixColor(a: RGBA, b: RGBA, t: number): RGBA {
 }
 
 function evaluateGradientNode(ctx: EvaluationContext) {
-  const width = Math.max(1, ctx.getNumberInput("width"));
-  const height = Math.max(1, ctx.getNumberInput("height"));
-  const colorA = ctx.getColorInput("colorA");
-  const colorB = ctx.getColorInput("colorB");
-  const axis = ctx.getStringInput("axis"); // "x" or "y"
+  const width = Math.max(1, ctx.getNumber("width"));
+  const height = Math.max(1, ctx.getNumber("height"));
+  const colorA = ctx.getColor("colorA");
+  const colorB = ctx.getColor("colorB");
+  const axis = ctx.getString("axis"); // "x" or "y"
 
   const out = new Layer(width, height);
 

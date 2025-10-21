@@ -2,8 +2,8 @@ import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import { EvaluationContext } from "@/core/types/evaluation";
 
 function evaluate(ctx: EvaluationContext) {
-  const condition = ctx.getBooleanInput("condition");
-  const message = ctx.getStringInput("message");
+  const condition = ctx.getBoolean("condition");
+  const message = ctx.getString("message");
   if (!condition) {
     throw new Error(message || "Assertion failed");
   }

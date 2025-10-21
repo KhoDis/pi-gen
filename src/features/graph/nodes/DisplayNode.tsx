@@ -10,7 +10,7 @@ import { nodeRegistry } from "@/core/registry/NodeRegistry";
 import { EvaluationContext } from "@/core/types/evaluation";
 import { createLayerValue, isLayerValue } from "@/core/types/values";
 import { useGraphStore } from "@/core/store/graphStore";
-import { createGraphEvaluator } from "@/core/engine/GraphEvaluator";
+import { createGraphEngine } from "@/core/engine/GraphEngine";
 
 // Import specialized parameter components
 import { NodeInput } from "@/components/ui/node-input";
@@ -55,14 +55,11 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
     if (!inputEdge || !sourceNode) return undefined;
 
     try {
-      // Create a graph evaluator with the current nodes and edges
-      const evaluator = createGraphEvaluator(
-        graphStore.nodes,
-        graphStore.edges,
-      );
+      // Create a graph engine with the current nodes and edges
+      const engine = createGraphEngine(graphStore.nodes, graphStore.edges);
 
       // Evaluate the graph starting from this node
-      const results = evaluator.evaluateNode(id);
+      const results = engine.evaluateNode(id);
 
       // Get the layer from the input
       const layerValue = results.layer;
@@ -84,11 +81,8 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
       // If layer computed fine, no error
       if (layer) return undefined;
       // Re-run to capture error message explicitly
-      const evaluator = createGraphEvaluator(
-        graphStore.nodes,
-        graphStore.edges,
-      );
-      evaluator.evaluateNode(id);
+      const engine = createGraphEngine(graphStore.nodes, graphStore.edges);
+      engine.evaluateNode(id);
       return undefined;
     } catch (err) {
       return err instanceof Error ? err.message : String(err);
@@ -184,7 +178,7 @@ const DisplayNodeComponent: React.FC<NodeComponentProps> = ({ id }) => {
  */
 function evaluateDisplayNode(ctx: EvaluationContext) {
   // Get the input layer
-  const layer = ctx.getLayerInput("layer");
+  const layer = ctx.getLayer("layer");
 
   // Return the layer as a proper Value object
   return {

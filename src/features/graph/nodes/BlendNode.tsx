@@ -31,10 +31,10 @@ function getPixelOrTransparent(layer: Layer, x: number, y: number): RGBA {
  * A = base/background, B = top/foreground.
  */
 function evaluateBlendNode(ctx: EvaluationContext) {
-  const base = ctx.getLayerInput("base");
-  const top = ctx.getLayerInput("top");
-  const opacity = clamp01(ctx.getNumberInput("opacity"));
-  const modeRaw = ctx.getOptionInput("mode");
+  const base = ctx.getLayer("base");
+  const top = ctx.getLayer("top");
+  const opacity = clamp01(ctx.getNumber("opacity"));
+  const modeRaw = ctx.getOption("mode");
   const mode: BlendMode = ((): BlendMode => {
     if (modeRaw === "multiply" || modeRaw === "screen") return modeRaw;
     return "normal";

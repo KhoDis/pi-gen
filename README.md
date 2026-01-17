@@ -1,5 +1,7 @@
 # Pi-Gen: Node-Based Pixel Art Generator
 
+<img width="1280" height="809" alt="изображение" src="https://github.com/user-attachments/assets/fffca8e3-b2cc-47d1-98e4-3169338df109" />
+
 Pi-Gen is a generative pixel art creation tool inspired by Blender's geometry nodes. It provides a visual, node-based interface for creating procedural pixel art.
 
 ## Features
